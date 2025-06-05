@@ -49,8 +49,8 @@ TRANSLATE_JOB_TYPE    := submit
 ## NOTE: beam size is reduced to 1
 ## NOTE: memory will only be sufficient for transformer-base models
 
-TRANSLATE_JOB_OPTIONS := HPC_CORES=96 HPC_MEM=232g HPC_TIME=24:00 MARIAN_BEAM_SIZE=1 MARIAN_CPU_DECODER_WORKSPACE=1024
-TRANSLATE_JOB_TYPE    := submitcpu
+# TRANSLATE_JOB_OPTIONS := HPC_CORES=96 HPC_MEM=232g HPC_TIME=24:00 MARIAN_BEAM_SIZE=1 MARIAN_CPU_DECODER_WORKSPACE=1024
+# TRANSLATE_JOB_TYPE    := submitcpu
 
 ## reduce number of cores to 32 for transformer-big models:
 
@@ -267,17 +267,19 @@ latest-all-source: ${ALLWIKIPARTS_LATEST_SRC}
 
 
 ## fetch the latest model
-## ---> TODO: should we fetch from ObjectStorage instead?
+
+# https://data.statmt.org/hplt-models/translate/v1.0/${MODELLANG}/hplt_opus/model.npz.best-chrf.npz
+# https://data.statmt.org/hplt-models/translate/v1.0/${MODELLANG}/hplt_opus/model.${MODELLANG}.spm
 
 ${LANGPAIR}/${MODELNAME}/decoder.yml:
 ifneq (${MODELZIP},)
 ifeq (${MODELTYPE},HPLT-MT-models)
 	mkdir -p ${dir $@}
-	wget -O ${dir $@}/model.npz https://data.statmt.org/hplt-models/translate/v1.0/${MODELLANG}/hplt_opus/model.npz.best-chrf.npz
-	wget -O ${dir $@}/model.spm https://data.statmt.org/hplt-models/translate/v1.0/${MODELLANG}/hplt_opus/model.${MODELLANG}.spm
+	wget -O ${dir $@}/model.npz https://huggingface.co/HPLT/translate-${MODELLANG}-v1.0-hplt/resolve/main/model.npz.best-chrf.npz?download=true
+	wget -O ${dir $@}/model.spm https://huggingface.co/HPLT/translate-${MODELLANG}-v1.0-hplt/resolve/main/model.${MODELLANG}.spm?download=true
 	@echo 'relative-paths: true'     > $@
 	@echo 'models:'                 >> $@
-	@echo '  - model.npz.npz'       >> $@
+	@echo '  - model.npz'           >> $@
 	@echo 'vocabs:'                 >> $@
 	@echo '  - model.spm'           >> $@
 	@echo '  - model.spm'           >> $@

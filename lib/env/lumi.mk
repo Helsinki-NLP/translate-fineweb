@@ -13,9 +13,9 @@ GPUJOB_HPC_CORES = 56
 GPUJOB_HPC_MEM = 32g
 
 
-CSCPROJECT    = project_462000088
+CSCPROJECT    = project_462000688
 WORKHOME      = ${shell realpath ${PWD}/work}
-OPUSHOME      = /scratch/project_462000088/data/OPUS
+OPUSHOME      = /scratch/project_462000688/data/OPUS
 HPC_QUEUE     = small
 SUBMIT_PREFIX = submitcpu
 GPU           = a100
@@ -30,7 +30,8 @@ ifdef LOCAL_SCRATCH
   TMPDIR      := ${LOCAL_SCRATCH}
   TMPWORKDIR  := ${LOCAL_SCRATCH}
 else
-  TMPDIR := /scratch/${CSCPROJECT}/tmp
+  TMPDIR     := /scratch/${CSCPROJECT}/tmp
+  TMPWORKDIR := ${TMPDIR}
 endif
 
 
