@@ -6,6 +6,7 @@
 #
 
 SHELL    := /bin/bash
+WHOAMI   := $(shell whoami)
 PWD      ?= ${shell pwd}
 REPOHOME ?= ${PWD}/
 
@@ -23,6 +24,7 @@ MEM          ?= 4g
 CORES        ?= 1
 WALLTIME     ?= 72
 
+SLURM_MAX_NR_JOBS ?= 200
 
 GPU          = v100
 DEVICE       = cuda
@@ -68,6 +70,9 @@ ifeq (${HPC_HOST},lumi)
   include ${REPOHOME}lib/env/lumi.mk
 endif
 
+
+GPU_PROJECT ?= ${CSCPROJECT}
+CPU_PROJECT ?= ${CSCPROJECT}
 
 
 ## default settings for CPU cores to be used

@@ -37,6 +37,10 @@ SLURM_JOBNAME ?= $(subst -,,${LANGPAIRSTR})
 
 
 %.submit:
+        while [ `squeue -u ${WHOAMI} | wc -l` -gt ${SLURM_MAX_NR_JOBS} ]; do \
+          echo "waiting for space in the queue";\
+          sleep 1; \
+        done
 	mkdir -p ${WORKDIR}
 	mkdir -p ${dir ${TMPWORKDIR}/$@}
 	echo '#!/bin/bash -l' > ${TMPWORKDIR}/$@
@@ -84,7 +88,7 @@ else
 	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> ${TMPWORKDIR}/$@
 endif
 	echo 'echo "Finishing at `date`"' >> ${TMPWORKDIR}/$@
-	sbatch ${SBATCH_ARGS} ${TMPWORKDIR}/$@
+	sbatch --account=${GPU_PROJECT} ${SBATCH_ARGS} ${TMPWORKDIR}/$@
 	mkdir -p ${WORKDIR}
 	-mv -f ${TMPWORKDIR}/$@ ${WORKDIR}/$@
 
@@ -103,6 +107,10 @@ CPUJOB_HPC_THREADS ?= ${CPUJOB_HPC_CORES}
 CPUJOB_HPC_JOBS    ?= ${CPUJOB_HPC_THREADS}
 
 %.submitcpu:
+        while [ `squeue -u ${WHOAMI} | wc -l` -gt ${SLURM_MAX_NR_JOBS} ]; do \
+          echo "waiting for space in the queue";\
+          sleep 1; \
+        done
 	mkdir -p ${WORKDIR}
 	mkdir -p ${dir ${TMPWORKDIR}/$@}
 	echo '#!/bin/bash -l' > ${TMPWORKDIR}/$@
@@ -135,7 +143,7 @@ endif
 	echo 'echo "Starting at `date`"' >> ${TMPWORKDIR}/$@
 	echo '${MAKE} -j ${CPUJOB_HPC_JOBS}  HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submitcpu=}' >> ${TMPWORKDIR}/$@
 	echo 'echo "Finishing at `date`"' >> ${TMPWORKDIR}/$@
-	sbatch ${SBATCH_ARGS} ${TMPWORKDIR}/$@
+	sbatch --account=${CPU_PROJECT} ${SBATCH_ARGS} ${TMPWORKDIR}/$@
 	mkdir -p ${WORKDIR}
 	-mv -f ${TMPWORKDIR}/$@ ${WORKDIR}/$@
 

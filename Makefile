@@ -1,8 +1,3 @@
-#
-# backtranslate wiki data with Tatoeba-MT challenge data
-#
-# only works with sentencepiece models!
-#
 
 PWD      := ${shell pwd}
 REPOHOME := ${PWD}/
@@ -18,17 +13,20 @@ TRG ?= fin
 LANGPAIR := ${SRC}-${TRG}
 
 
-## various sources are available
-WIKISOURCE ?= fineweb-edu
+## data source
+DATA_SOURCE ?= fineweb-edu-10BT
+DATA_SAMPLE ?= sample/10BT
 
 
-## NR_DOCS = number of documents to be read from fineweb
+## NR_DOCS = number of documents to be read from fineweb-edu (default=0 (no limit))
 ## SPLIT_SIZE = number of lines per shard
 ## PART = shard idenitfier (default = aa)
 
-NR_DOCS    ?= 50000
+# NR_DOCS    ?= 50000
+NR_DOCS    ?= 0
 SPLIT_SIZE ?= 1000000
 PART       ?= aa
+
 
 
 ## maximum input length (number sentence piece segments)
@@ -90,38 +88,38 @@ endif
 
 
 
-WIKI_DIR     = ${PWD}/fineweb
+DATA_DIR     = ${PWD}/fineweb
 LANGID       = ${SRC}
 OUTPUT_DIR   = ${LANGPAIR}
-WIKI_TXT     = ${WIKI_DIR}/${LANGID}/${WIKISOURCE}.${PART}.gz
-WIKI_SRC     = ${OUTPUT_DIR}/${WIKISOURCE}.${PART}_${MODELNAME}.${LANGPAIR}.${SRC}.gz
-WIKI_PRE     = ${OUTPUT_DIR}/${WIKISOURCE}.${PART}_${MODELNAME}.${LANGPAIR}.${SRC}.spm.gz
-WIKI_TRG     = ${OUTPUT_DIR}/${WIKISOURCE}.${PART}_${MODELNAME}.${LANGPAIR}.${TRG}.gz
+DATA_TXT     = ${DATA_DIR}/${LANGID}/${DATA_SOURCE}.${PART}.gz
+DATA_SRC     = ${OUTPUT_DIR}/${DATA_SOURCE}.${PART}_${MODELNAME}.${LANGPAIR}.${SRC}.gz
+DATA_PRE     = ${OUTPUT_DIR}/${DATA_SOURCE}.${PART}_${MODELNAME}.${LANGPAIR}.${SRC}.spm.gz
+DATA_TRG     = ${OUTPUT_DIR}/${DATA_SOURCE}.${PART}_${MODELNAME}.${LANGPAIR}.${TRG}.gz
 
-WIKI_LATEST_SRC    = ${OUTPUT_DIR}/latest/${WIKISOURCE}.${PART}.${LANGPAIR}.${SRC}.gz
-WIKI_LATEST_TRG    = ${OUTPUT_DIR}/latest/${WIKISOURCE}.${PART}.${LANGPAIR}.${TRG}.gz
-WIKI_LATEST_README = ${OUTPUT_DIR}/latest/README.md
+DATA_LATEST_SRC    = ${OUTPUT_DIR}/latest/${DATA_SOURCE}.${PART}.${LANGPAIR}.${SRC}.gz
+DATA_LATEST_TRG    = ${OUTPUT_DIR}/latest/${DATA_SOURCE}.${PART}.${LANGPAIR}.${TRG}.gz
+DATA_LATEST_README = ${OUTPUT_DIR}/latest/README.md
 
 ## list of all shards
-PARTS = ${sort ${patsubst ${WIKI_DIR}/${LANGID}/${WIKISOURCE}.%.gz,%,\
-		${wildcard ${WIKI_DIR}/${LANGID}/${WIKISOURCE}.??.gz}}}
+PARTS = ${sort ${patsubst ${DATA_DIR}/${LANGID}/${DATA_SOURCE}.%.gz,%,\
+		${wildcard ${DATA_DIR}/${LANGID}/${DATA_SOURCE}.??.gz}}}
 
 
 ## targets for all data shards
 
-ALLWIKIPARTS_TXT = ${patsubst %,${WIKI_DIR}/${LANGID}/${WIKISOURCE}.%.gz,${PARTS}}
-ALLWIKIPARTS_SRC = ${patsubst %,${OUTPUT_DIR}/${WIKISOURCE}.%_${MODELNAME}.${LANGPAIR}.${SRC}.gz,${PARTS}}
-ALLWIKIPARTS_PRE = ${patsubst %,${OUTPUT_DIR}/${WIKISOURCE}.%_${MODELNAME}.${LANGPAIR}.${SRC}.spm.gz,${PARTS}}
-ALLWIKIPARTS_TRG = ${patsubst %,${OUTPUT_DIR}/${WIKISOURCE}.%_${MODELNAME}.${LANGPAIR}.${TRG}.gz,${PARTS}}
+ALLDATAPARTS_TXT = ${patsubst %,${DATA_DIR}/${LANGID}/${DATA_SOURCE}.%.gz,${PARTS}}
+ALLDATAPARTS_SRC = ${patsubst %,${OUTPUT_DIR}/${DATA_SOURCE}.%_${MODELNAME}.${LANGPAIR}.${SRC}.gz,${PARTS}}
+ALLDATAPARTS_PRE = ${patsubst %,${OUTPUT_DIR}/${DATA_SOURCE}.%_${MODELNAME}.${LANGPAIR}.${SRC}.spm.gz,${PARTS}}
+ALLDATAPARTS_TRG = ${patsubst %,${OUTPUT_DIR}/${DATA_SOURCE}.%_${MODELNAME}.${LANGPAIR}.${TRG}.gz,${PARTS}}
 
-ALLWIKIPARTS_LATEST_SRC = ${patsubst %,${OUTPUT_DIR}/latest/${WIKISOURCE}.%.${LANGPAIR}.${SRC}.gz,${PARTS}}
-ALLWIKIPARTS_LATEST_TRG = ${patsubst %,${OUTPUT_DIR}/latest/${WIKISOURCE}.%.${LANGPAIR}.${TRG}.gz,${PARTS}}
+ALLDATAPARTS_LATEST_SRC = ${patsubst %,${OUTPUT_DIR}/latest/${DATA_SOURCE}.%.${LANGPAIR}.${SRC}.gz,${PARTS}}
+ALLDATAPARTS_LATEST_TRG = ${patsubst %,${OUTPUT_DIR}/latest/${DATA_SOURCE}.%.${LANGPAIR}.${TRG}.gz,${PARTS}}
 
 
 
 
 ## don't delete translated text if the process crashes
-.PRECIOUS: ${WIKI_TRG} ${ALLWIKIPARTS_TRG} ${ALLWIKIS_TRG}
+.PRECIOUS: ${DATA_TRG} ${ALLDATAPARTS_TRG} ${ALLDATAS_TRG}
 
 
 ifdef LOCAL_SCRATCH
@@ -147,7 +145,7 @@ translate-jobs: ${TRANSLATE_ALL_JOBS}
 
 .PHONY: ${TRANSLATE_ALL_JOBS}
 ${TRANSLATE_ALL_JOBS}:
-	if [ ! -e ${OUTPUT_DIR}/${WIKISOURCE}.$(@:-translate-job=)_${MODELNAME}.${LANGPAIR}.${TRG}.gz ]; then \
+	if [ ! -e ${OUTPUT_DIR}/${DATA_SOURCE}.$(@:-translate-job=)_${MODELNAME}.${LANGPAIR}.${TRG}.gz ]; then \
 	  ${MAKE} PART=$(@:-translate-job=) translate-job; \
 	fi
 
@@ -175,7 +173,7 @@ release-all: upload-all
 	${MAKE} released-data.txt released-data-size.txt
 
 .PHONY: upload release
-release upload: ${WIKI_LATEST_README}
+release upload: ${DATA_LATEST_README}
 	swift upload ${BT_CONTAINER} --changed --skip-identical ${LANGPAIR}/latest
 	${MAKE} released-data.txt
 	swift post ${BT_CONTAINER} --read-acl ".r:*"
@@ -209,7 +207,7 @@ released-data-size.txt: .
 # download released data
 
 .PHONY: download
-download: ${WIKI_DIR}/${SRC}
+download: ${DATA_DIR}/${SRC}
 
 
 #---------------------------------------------------------------
@@ -239,29 +237,29 @@ retrieve fetch:
 
 
 .PHONY: prepare
-prepare: ${LANGPAIR}/${MODELNAME}/decoder.yml ${WIKI_TXT}
+prepare: ${LANGPAIR}/${MODELNAME}/decoder.yml ${DATA_TXT}
 
 .PHONY: prepare-allwikis
-prepare-allwikis: ${LANGPAIR}/${MODELNAME}/decoder.yml ${ALLWIKIS_TXT}
+prepare-allwikis: ${LANGPAIR}/${MODELNAME}/decoder.yml ${ALLDATAS_TXT}
 
 
 ## translate one part
 .PHONY: translate
-translate: ${WIKI_LATEST_README} ${WIKI_LATEST_TRG}
-ifneq (${WIKI_LATEST_SRC},)
-	${MAKE} ${WIKI_LATEST_SRC}
+translate: ${DATA_LATEST_README} ${DATA_LATEST_TRG}
+ifneq (${DATA_LATEST_SRC},)
+	${MAKE} ${DATA_LATEST_SRC}
 endif
 
 ## translate all parts
 .PHONY: translate-all
-translate-all: ${ALLWIKIPARTS_LATEST_TRG}
-ifneq (${ALLWIKIPARTS_LATEST_SRC},)
+translate-all: ${ALLDATAPARTS_LATEST_TRG}
+ifneq (${ALLDATAPARTS_LATEST_SRC},)
 	${MAKE} latest-all-source-parts
 endif
 
 ## create all source language files
 .PHONY: latest-all-source
-latest-all-source: ${ALLWIKIPARTS_LATEST_SRC}
+latest-all-source: ${ALLDATAPARTS_LATEST_SRC}
 
 
 
@@ -316,16 +314,15 @@ endif
 
 
 
-${WIKI_DIR}/${SRC}/${WIKISOURCE}.${PART}.gz: ${WIKI_DIR}/${SRC}/${WIKISOURCE}.txt.gz
+${DATA_DIR}/${SRC}/${DATA_SOURCE}.${PART}.gz: ${DATA_DIR}/${SRC}/${DATA_SOURCE}.txt.gz
 	${GZCAT} $< | split -l ${SPLIT_SIZE} - $(@:${PART}.gz=)
 	${GZIP} -f $(@:${PART}.gz=)??
 
 
 # fetch the data
-${WIKI_DIR}/${SRC}/${WIKISOURCE}.txt.gz:
+${DATA_DIR}/${SRC}/${DATA_SOURCE}.txt.gz:
 	mkdir -p $(dir $@)
-	python prepare_data.py -l ${NR_DOCS} -d $(@:.txt.gz=.docs) | gzip -c > $@
-	gzip -f $(@:.txt.gz=.docs)
+	python prepare_data.py -l ${NR_DOCS} -d $(@:.txt.gz=.docs.gz) -c ${DATA_SAMPLE} | gzip -c > $@
 
 
 
@@ -338,8 +335,8 @@ endif
 
 
 
-# ${OUTPUT_DIR}/%.${PART}_${MODELNAME}.${LANGPAIR}.${SRC}.spm.gz: ${WIKI_DIR}/${SRC}/%.${PART}.gz
-${OUTPUT_DIR}/%_${MODELNAME}.${LANGPAIR}.${SRC}.spm.gz: ${WIKI_DIR}/${SRC}/%.gz
+# ${OUTPUT_DIR}/%.${PART}_${MODELNAME}.${LANGPAIR}.${SRC}.spm.gz: ${DATA_DIR}/${SRC}/%.${PART}.gz
+${OUTPUT_DIR}/%_${MODELNAME}.${LANGPAIR}.${SRC}.spm.gz: ${DATA_DIR}/${SRC}/%.gz
 ifneq (${MODELZIP},)
 	mkdir -p ${dir $@}
 	${MAKE} ${LANGPAIR}/${MODELNAME}/decoder.yml
@@ -354,8 +351,8 @@ endif
 ## merge SentencePiece segments in the source text
 ## (Why? because we filter out some data from the original wiki text, see above)
 
-# ${WIKI_SRC}: ${WIKI_PRE}
-${OUTPUT_DIR}/${WIKISOURCE}.%.${LANGPAIR}.${SRC}.gz: ${OUTPUT_DIR}/${WIKISOURCE}.%.${LANGPAIR}.${SRC}.spm.gz
+# ${DATA_SRC}: ${DATA_PRE}
+${OUTPUT_DIR}/${DATA_SOURCE}.%.${LANGPAIR}.${SRC}.gz: ${OUTPUT_DIR}/${DATA_SOURCE}.%.${LANGPAIR}.${SRC}.spm.gz
 ifneq (${MODELZIP},)
 	mkdir -p ${dir $@}
 	${GZCAT} $< | ${POST_PROCESS} \
@@ -370,15 +367,15 @@ endif
 ## --> this allows multiple translation iterations
 ##     without duplicating the data we want to use in MT training
 
-${OUTPUT_DIR}/latest/${WIKISOURCE}.%.${LANGPAIR}.${SRC}.gz: ${OUTPUT_DIR}/${WIKISOURCE}.%_${MODELNAME}.${LANGPAIR}.${SRC}.gz
+${OUTPUT_DIR}/latest/${DATA_SOURCE}.%.${LANGPAIR}.${SRC}.gz: ${OUTPUT_DIR}/${DATA_SOURCE}.%_${MODELNAME}.${LANGPAIR}.${SRC}.gz
 	mkdir -p ${dir $@}
 	cp $< $@
 
-${OUTPUT_DIR}/latest/${WIKISOURCE}.%.${LANGPAIR}.${TRG}.gz: ${OUTPUT_DIR}/${WIKISOURCE}.%_${MODELNAME}.${LANGPAIR}.${TRG}.gz
+${OUTPUT_DIR}/latest/${DATA_SOURCE}.%.${LANGPAIR}.${TRG}.gz: ${OUTPUT_DIR}/${DATA_SOURCE}.%_${MODELNAME}.${LANGPAIR}.${TRG}.gz
 	mkdir -p ${dir $@}
 	cp $< $@
 
-${WIKI_LATEST_README}:
+${DATA_LATEST_README}:
 	mkdir -p ${dir $@}
 	@echo "${MODELZIP}" >$@
 

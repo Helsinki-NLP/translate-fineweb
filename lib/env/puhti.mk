@@ -15,6 +15,8 @@ WORKHOME     = ${shell realpath ${PWD}/work}
 GPU          = v100
 HPC_QUEUE    = small
 
+SLURM_MAX_NR_JOBS := 200
+
 ifneq (${wildcard /projappl/project_2001194/bin},)
   APPLHOME     = /projappl/project_2001194
   OPUSHOME     = /projappl/nlpl/data/OPUS
@@ -76,7 +78,7 @@ endif
 
 
 ## extra SLURM directives (up to 3 numbered variables)
-HPC_EXTRA1 = \#SBATCH --account=${CSCPROJECT}
+# HPC_EXTRA1 = \#SBATCH --account=${CSCPROJECT}
 
 
 BUILD_MODULES  = StdEnv perl python-data cuda intel-oneapi-mkl openmpi cmake

@@ -18,6 +18,7 @@ SUBMIT_PREFIX = submitcpu
 GPU           = a100
 WALLTIME      = 36
 
+SLURM_MAX_NR_JOBS := 200
 
 MARIAN = ${shell which marian-no-mpi 2>/dev/null || which marian 2>/dev/null || echo ${TOOLSDIR}/marian-dev/build/marian}
 
@@ -80,7 +81,7 @@ endif
 
 
 ## extra SLURM directives (up to 5 variables)
-HPC_EXTRA1 = \#SBATCH --account=${CSCPROJECT}
+# HPC_EXTRA1 = \#SBATCH --account=${CSCPROJECT}
 
 
 ## setup for compiling marian-nmt
