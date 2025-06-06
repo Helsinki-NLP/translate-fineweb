@@ -37,10 +37,10 @@ SLURM_JOBNAME ?= $(subst -,,${LANGPAIRSTR})
 
 
 %.submit:
-        while [ `squeue -u ${WHOAMI} | wc -l` -gt ${SLURM_MAX_NR_JOBS} ]; do \
-          echo "waiting for space in the queue";\
-          sleep 1; \
-        done
+	while [ `squeue -u ${WHOAMI} | wc -l` -gt ${SLURM_MAX_NR_JOBS} ]; do \
+	  echo "waiting for space in the queue";\
+	  sleep 1; \
+	done
 	mkdir -p ${WORKDIR}
 	mkdir -p ${dir ${TMPWORKDIR}/$@}
 	echo '#!/bin/bash -l' > ${TMPWORKDIR}/$@
@@ -83,9 +83,13 @@ ifneq (${NR_GPUS},8)
 else
 	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> ${TMPWORKDIR}/$@
 endif
+	echo 'gpu-energy --save' >> ${TMPWORKDIR}/$@
 else
 #	echo 'srun ${MAKE} -j ${GPUJOB_HPC_JOBS} ${MAKEARGS} ${@:.submit=}' >> ${TMPWORKDIR}/$@
 	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> ${TMPWORKDIR}/$@
+endif
+ifeq (${HPC_HOST},lumi)
+	echo 'gpu-energy --diff' >> ${TMPWORKDIR}/$@
 endif
 	echo 'echo "Finishing at `date`"' >> ${TMPWORKDIR}/$@
 	sbatch --account=${GPU_PROJECT} ${SBATCH_ARGS} ${TMPWORKDIR}/$@
@@ -107,10 +111,10 @@ CPUJOB_HPC_THREADS ?= ${CPUJOB_HPC_CORES}
 CPUJOB_HPC_JOBS    ?= ${CPUJOB_HPC_THREADS}
 
 %.submitcpu:
-        while [ `squeue -u ${WHOAMI} | wc -l` -gt ${SLURM_MAX_NR_JOBS} ]; do \
-          echo "waiting for space in the queue";\
-          sleep 1; \
-        done
+	while [ `squeue -u ${WHOAMI} | wc -l` -gt ${SLURM_MAX_NR_JOBS} ]; do \
+	  echo "waiting for space in the queue";\
+	  sleep 1; \
+	done
 	mkdir -p ${WORKDIR}
 	mkdir -p ${dir ${TMPWORKDIR}/$@}
 	echo '#!/bin/bash -l' > ${TMPWORKDIR}/$@

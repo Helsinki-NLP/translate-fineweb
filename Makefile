@@ -7,6 +7,9 @@ include ${REPOHOME}lib/env.mk
 include ${REPOHOME}lib/slurm.mk
 
 
+# /scratch/project_462000963/datasets/HuggingFaceFW/fineweb-edu/350BT/fineweb-edu_350BT_00100.jsonl.gz
+
+
 SRC ?= eng
 TRG ?= fin
 
@@ -39,7 +42,7 @@ MAX_SENTENCES ?= ${SPLIT_SIZE}
 
 ## translation job options for a single GPU
 
-TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=32g GPUJOB_HPC_CORES=8 NR_GPUS=1 HPC_TIME=24:00 MARIAN_BEAM_SIZE=6
+TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=1 HPC_TIME=24:00 MARIAN_BEAM_SIZE=6
 TRANSLATE_JOB_TYPE    := submit
 
 
