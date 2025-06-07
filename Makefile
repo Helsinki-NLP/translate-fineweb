@@ -34,13 +34,20 @@ FINEWEB_TXT     := $(patsubst %.jsonl.gz,${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_J
 all: translate
 
 
+
+.PHONY: prepare-job
+prepare-job: prepare-model 
+	${MAKE} HPC_MEM=64g HPC_CORES=32 prepare.submitcpu
+
+
 ## maximum input length (number sentence piece segments)
 
 MARIAN_MAX_LENGTH := 512
 
 ## translation job options for a single GPU-node
 
-TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=8 MARIAN_GPUS='0 1 2 3 4 5 6 7' HPC_TIME=24:00 MARIAN_BEAM_SIZE=6
+# TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=8 MARIAN_GPUS='0 1 2 3 4 5 6 7' HPC_TIME=24:00 MARIAN_BEAM_SIZE=6
+TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=128g GPUJOB_HPC_CORES=8 NR_GPUS=8 HPC_TIME=24:00 MARIAN_BEAM_SIZE=6
 TRANSLATE_JOB_TYPE    := submit
 
 ## translation job options for a CPU job
@@ -59,12 +66,11 @@ translate-job: prepare-first
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} translate-first.${TRANSLATE_JOB_TYPE}
 
 .PHONY: translate-jobs
-translate-jobs: prepare
-	${MAKE} ${TRANSLATE_JOB_OPTIONS} translate.${TRANSLATE_JOB_TYPE}
+translate-jobs: ${FINEWEB_TRANS_JOBS}
 
-.PHONY: prepare-job
-prepare-job: prepare-model 
-	${MAKE} HPC_MEM=64g HPC_CORES=32 prepare.submitcpu
+.PHONY: ${FINEWEB_TRANS_JOBS}
+${FINEWEB_TRANS_JOBS}:
+	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(@:-job=).${TRANSLATE_JOB_TYPE}
 
 
 
@@ -112,8 +118,9 @@ print-modelinfo:
 
 
 
-FINEWEB_TRANS_DIR := fineweb-edu/350BT/${LANGPAIR}/${MODELNAME}
-FINEWEB_TRANS     := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT})
+FINEWEB_TRANS_DIR  := fineweb-edu/350BT/${LANGPAIR}/${MODELNAME}
+FINEWEB_TRANS      := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT})
+FINEWEB_TRANS_JOBS := $(addsuffix -job,${FINEWEB_TRANS})
 
 
 ifdef LOCAL_SCRATCH
@@ -219,8 +226,9 @@ ${FINEWEB_TRANS}: %.txt.gz: %.input.gz
 	${LOAD_ENV} && cd ${LANGPAIR}/${MODELNAME} && ${MARIAN_DECODER} \
 		-i ${PWD}/$< \
 		-c decoder.yml \
-		-d ${MARIAN_GPUS} \
+		--num-devices ${NR_GPUS} \
 		${MARIAN_DECODER_FLAGS} |\
 	${POST_PROCESS} gzip -c > ${PWD}/$@
 
+#		-d ${MARIAN_GPUS}
 

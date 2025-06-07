@@ -29,7 +29,7 @@ GPUJOB_HPC_JOBS    ?= ${GPUJOB_HPC_THREADS}
 GPUJOB_HPC_TIME    ?= ${HPC_TIME}
 
 
-SLURM_JOBNAME ?= $(subst -,,${LANGPAIRSTR})
+
 
 ## exclude broken nodes:
 ## list comma separated nodes to be excluded
@@ -41,62 +41,62 @@ SLURM_JOBNAME ?= $(subst -,,${LANGPAIRSTR})
 	  echo "waiting for space in the queue";\
 	  sleep 1; \
 	done
-	mkdir -p ${WORKDIR}
-	mkdir -p ${dir ${TMPWORKDIR}/$@}
-	echo '#!/bin/bash -l' > ${TMPWORKDIR}/$@
-	echo '#SBATCH -J "$(SLURM_JOBNAME)${@:.submit=}"' >>${TMPWORKDIR}/$@
-	echo '#SBATCH -o $(SLURM_JOBNAME)${@:.submit=}.out.%j' >> ${TMPWORKDIR}/$@
-	echo '#SBATCH -e $(SLURM_JOBNAME)${@:.submit=}.err.%j' >> ${TMPWORKDIR}/$@
+	mkdir -p $(dir $@)
+	echo '#!/bin/bash -l' > $@
+	echo '#SBATCH -J "$(SLURM_JOBNAME)${@:.submit=}"' >>$@
+	echo '#SBATCH -o $(SLURM_JOBNAME)${@:.submit=}.out.%j' >> $@
+	echo '#SBATCH -e $(SLURM_JOBNAME)${@:.submit=}.err.%j' >> $@
 ifdef EMAIL
-	echo '#SBATCH --mail-type=END' >> ${TMPWORKDIR}/$@
-	echo '#SBATCH --mail-user=${EMAIL}' >> ${TMPWORKDIR}/$@
+	echo '#SBATCH --mail-type=END' >> $@
+	echo '#SBATCH --mail-user=${EMAIL}' >> $@
 endif
-	echo '#SBATCH --mem=${GPUJOB_HPC_MEM}'  >> ${TMPWORKDIR}/$@
-	echo '#SBATCH --cpus-per-task ${GPUJOB_HPC_CORES}'   >> ${TMPWORKDIR}/$@
-	echo '#SBATCH -n 1'                     >> ${TMPWORKDIR}/$@
-	echo '#SBATCH -N ${GPUJOB_HPC_NODES}'   >> ${TMPWORKDIR}/$@
-#	echo '#SBATCH --ntasks=${NR_GPUS}'      >> ${TMPWORKDIR}/$@
-	echo '#SBATCH -t ${GPUJOB_HPC_TIME}:00' >> ${TMPWORKDIR}/$@
-	echo '#SBATCH -p ${GPUJOB_HPC_QUEUE}'   >> ${TMPWORKDIR}/$@
-	echo '#SBATCH ${HPC_GPU_ALLOCATION}'    >> ${TMPWORKDIR}/$@
+	echo '#SBATCH --mem=${GPUJOB_HPC_MEM}'  >> $@
+	echo '#SBATCH --cpus-per-task ${GPUJOB_HPC_CORES}'   >> $@
+	echo '#SBATCH -n 1'                     >> $@
+	echo '#SBATCH -N ${GPUJOB_HPC_NODES}'   >> $@
+#	echo '#SBATCH --ntasks=${NR_GPUS}'      >> $@
+	echo '#SBATCH -t ${GPUJOB_HPC_TIME}:00' >> $@
+	echo '#SBATCH -p ${GPUJOB_HPC_QUEUE}'   >> $@
+	echo '#SBATCH ${HPC_GPU_ALLOCATION}'    >> $@
 ifdef BROKEN_NODES
-	echo '#SBATCH --exclude=${BROKEN_NODES}' >> ${TMPWORKDIR}/$@
+	echo '#SBATCH --exclude=${BROKEN_NODES}' >> $@
 endif
-	echo '${HPC_EXTRA}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_EXTRA1}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_EXTRA2}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_EXTRA3}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_GPU_EXTRA1}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_GPU_EXTRA2}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_GPU_EXTRA3}' >> ${TMPWORKDIR}/$@
-	echo '${LOAD_GPU_ENV}'           >> ${TMPWORKDIR}/$@
-	echo 'cd $${SLURM_SUBMIT_DIR:-.}' >> ${TMPWORKDIR}/$@
-	echo 'pwd' >> ${TMPWORKDIR}/$@
-	echo 'echo "Starting at `date`"' >> ${TMPWORKDIR}/$@
+	echo '${HPC_EXTRA}' >> $@
+	echo '${HPC_EXTRA1}' >> $@
+	echo '${HPC_EXTRA2}' >> $@
+	echo '${HPC_EXTRA3}' >> $@
+	echo '${HPC_GPU_EXTRA1}' >> $@
+	echo '${HPC_GPU_EXTRA2}' >> $@
+	echo '${HPC_GPU_EXTRA3}' >> $@
+	echo '${LOAD_GPU_ENV}'           >> $@
+	echo 'cd $${SLURM_SUBMIT_DIR:-.}' >> $@
+	echo 'pwd' >> $@
+	echo 'echo "Starting at `date`"' >> $@
 ifeq (${HPC_HOST},lumi)
 ifneq (${NR_GPUS},8)
-	echo 'CPU_BIND="mask_cpu:fe000000000000,fe00000000000000"' >> ${TMPWORKDIR}/$@
-	echo 'CPU_BIND="$${CPU_BIND},fe0000,fe000000"' >> ${TMPWORKDIR}/$@
-	echo 'CPU_BIND="$${CPU_BIND},fe,fe00"' >> ${TMPWORKDIR}/$@
-	echo 'CPU_BIND="$${CPU_BIND},fe00000000,fe0000000000"' >> ${TMPWORKDIR}/$@
-	echo 'srun --cpu-bind=$${CPU_BIND} ${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> ${TMPWORKDIR}/$@
+	echo 'CPU_BIND="mask_cpu:fe000000000000,fe00000000000000"' >> $@
+	echo 'CPU_BIND="$${CPU_BIND},fe0000,fe000000"' >> $@
+	echo 'CPU_BIND="$${CPU_BIND},fe,fe00"' >> $@
+	echo 'CPU_BIND="$${CPU_BIND},fe00000000,fe0000000000"' >> $@
+	echo 'srun --cpu-bind=$${CPU_BIND} ${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
 else
-	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> ${TMPWORKDIR}/$@
+	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
 endif
-	echo 'gpu-energy --save' >> ${TMPWORKDIR}/$@
+	echo 'gpu-energy --save' >> $@
 else
-#	echo 'srun ${MAKE} -j ${GPUJOB_HPC_JOBS} ${MAKEARGS} ${@:.submit=}' >> ${TMPWORKDIR}/$@
-	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> ${TMPWORKDIR}/$@
+#	echo 'srun ${MAKE} -j ${GPUJOB_HPC_JOBS} ${MAKEARGS} ${@:.submit=}' >> $@
+	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
 endif
 ifeq (${HPC_HOST},lumi)
-	echo 'gpu-energy --diff' >> ${TMPWORKDIR}/$@
+	echo 'gpu-energy --diff' >> $@
 endif
-	echo 'echo "Finishing at `date`"' >> ${TMPWORKDIR}/$@
-	sbatch --account=${GPU_PROJECT} ${SBATCH_ARGS} ${TMPWORKDIR}/$@
-	mkdir -p ${WORKDIR}
-	-mv -f ${TMPWORKDIR}/$@ ${WORKDIR}/$@
+	echo 'echo "Finishing at `date`"' >> $@
+	sbatch --account=${GPU_PROJECT} ${SBATCH_ARGS} $@
+	if [ $(notdir $@) == $@ ]; then \
+	  mkdir -p sbatch; \
+	  mv -f $@ sbatch/$@; \
+	fi
 
-# 	echo 'srun ${MAKE} NR=${NR} MODELTYPE=${MODELTYPE} DATASET=${DATASET} SRC=${SRC} TRG=${TRG} PRE_SRC=${PRE_SRC} PRE_TRG=${PRE_TRG} ${MAKEARGS} ${@:.submit=}' >> $@
 
 
 ## submit job to cpu queue
@@ -115,41 +115,40 @@ CPUJOB_HPC_JOBS    ?= ${CPUJOB_HPC_THREADS}
 	  echo "waiting for space in the queue";\
 	  sleep 1; \
 	done
-	mkdir -p ${WORKDIR}
-	mkdir -p ${dir ${TMPWORKDIR}/$@}
-	echo '#!/bin/bash -l' > ${TMPWORKDIR}/$@
-	echo '#SBATCH -J "$(SLURM_JOBNAME)${@:.submitcpu=}"'      >>${TMPWORKDIR}/$@
-	echo '#SBATCH -o $(SLURM_JOBNAME)${@:.submitcpu=}.out.%j' >> ${TMPWORKDIR}/$@
-	echo '#SBATCH -e $(SLURM_JOBNAME)${@:.submitcpu=}.err.%j' >> ${TMPWORKDIR}/$@
+	mkdir -p $(dir $@)
+	echo '#!/bin/bash -l' > $@
+	echo '#SBATCH -J "$(SLURM_JOBNAME)${@:.submitcpu=}"'      >>$@
+	echo '#SBATCH -o $(SLURM_JOBNAME)${@:.submitcpu=}.out.%j' >> $@
+	echo '#SBATCH -e $(SLURM_JOBNAME)${@:.submitcpu=}.err.%j' >> $@
 ifdef EMAIL
-	echo '#SBATCH --mail-type=END'                            >> ${TMPWORKDIR}/$@
-	echo '#SBATCH --mail-user=${EMAIL}'                       >> ${TMPWORKDIR}/$@
+	echo '#SBATCH --mail-type=END'                            >> $@
+	echo '#SBATCH --mail-user=${EMAIL}'                       >> $@
 endif
-	echo '#SBATCH --mem=${CPUJOB_HPC_MEM}'                    >> ${TMPWORKDIR}/$@
-	echo '#SBATCH -n ${CPUJOB_HPC_CORES}' >> ${TMPWORKDIR}/$@
-	echo '#SBATCH -N ${CPUJOB_HPC_NODES}' >> ${TMPWORKDIR}/$@
-	echo '#SBATCH -p ${CPUJOB_HPC_QUEUE}' >> ${TMPWORKDIR}/$@
-	echo '#SBATCH -t ${CPUJOB_HPC_TIME}:00' >> ${TMPWORKDIR}/$@
+	echo '#SBATCH --mem=${CPUJOB_HPC_MEM}'                    >> $@
+	echo '#SBATCH -n ${CPUJOB_HPC_CORES}' >> $@
+	echo '#SBATCH -N ${CPUJOB_HPC_NODES}' >> $@
+	echo '#SBATCH -p ${CPUJOB_HPC_QUEUE}' >> $@
+	echo '#SBATCH -t ${CPUJOB_HPC_TIME}:00' >> $@
 ifdef BROKEN_NODES
-	echo '#SBATCH --exclude=${BROKEN_NODES}' >> ${TMPWORKDIR}/$@
+	echo '#SBATCH --exclude=${BROKEN_NODES}' >> $@
 endif
-	echo '${HPC_EXTRA}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_EXTRA1}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_EXTRA2}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_EXTRA3}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_CPU_EXTRA1}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_CPU_EXTRA2}' >> ${TMPWORKDIR}/$@
-	echo '${HPC_CPU_EXTRA3}' >> ${TMPWORKDIR}/$@
-	echo '${LOAD_CPU_ENV}'           >> ${TMPWORKDIR}/$@
-	echo 'cd $${SLURM_SUBMIT_DIR:-.}' >> ${TMPWORKDIR}/$@
-	echo 'pwd' >> ${TMPWORKDIR}/$@
-	echo 'module list'               >> ${TMPWORKDIR}/$@
-	echo 'echo "Starting at `date`"' >> ${TMPWORKDIR}/$@
-	echo '${MAKE} -j ${CPUJOB_HPC_JOBS}  HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submitcpu=}' >> ${TMPWORKDIR}/$@
-	echo 'echo "Finishing at `date`"' >> ${TMPWORKDIR}/$@
-	sbatch --account=${CPU_PROJECT} ${SBATCH_ARGS} ${TMPWORKDIR}/$@
-	mkdir -p ${WORKDIR}
-	-mv -f ${TMPWORKDIR}/$@ ${WORKDIR}/$@
+	echo '${HPC_EXTRA}' >> $@
+	echo '${HPC_EXTRA1}' >> $@
+	echo '${HPC_EXTRA2}' >> $@
+	echo '${HPC_EXTRA3}' >> $@
+	echo '${HPC_CPU_EXTRA1}' >> $@
+	echo '${HPC_CPU_EXTRA2}' >> $@
+	echo '${HPC_CPU_EXTRA3}' >> $@
+	echo '${LOAD_CPU_ENV}'           >> $@
+	echo 'cd $${SLURM_SUBMIT_DIR:-.}' >> $@
+	echo 'pwd' >> $@
+	echo 'module list'               >> $@
+	echo 'echo "Starting at `date`"' >> $@
+	echo '${MAKE} -j ${CPUJOB_HPC_JOBS}  HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submitcpu=}' >> $@
+	echo 'echo "Finishing at `date`"' >> $@
+	sbatch --account=${CPU_PROJECT} ${SBATCH_ARGS} $@
+	if [ $(notdir $@) == $@ ]; then \
+	  mkdir -p sbatch; \
+	  mv -f $@ sbatch/$@; \
+	fi
 
-
-#	echo '${MAKE} -j ${HPC_CORES} DATASET=${DATASET} SRC=${SRC} TRG=${TRG} PRE_SRC=${PRE_SRC} PRE_TRG=${PRE_TRG} ${MAKEARGS} ${@:.submitcpu=}' >> $@
