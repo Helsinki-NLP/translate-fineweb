@@ -73,22 +73,22 @@ endif
 	echo 'pwd' >> $@
 	echo 'echo "Starting at `date`"' >> $@
 ifeq (${HPC_HOST},lumi)
-ifneq (${NR_GPUS},8)
+# ifneq (${NR_GPUS},8)
 	echo 'CPU_BIND="mask_cpu:fe000000000000,fe00000000000000"' >> $@
 	echo 'CPU_BIND="$${CPU_BIND},fe0000,fe000000"' >> $@
 	echo 'CPU_BIND="$${CPU_BIND},fe,fe00"' >> $@
 	echo 'CPU_BIND="$${CPU_BIND},fe00000000,fe0000000000"' >> $@
+#	echo 'gpu-energy --save' >> $@
 	echo 'srun --cpu-bind=$${CPU_BIND} ${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
-else
-	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
-endif
-	echo 'gpu-energy --save' >> $@
+# else
+# 	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
+# endif
 else
 #	echo 'srun ${MAKE} -j ${GPUJOB_HPC_JOBS} ${MAKEARGS} ${@:.submit=}' >> $@
 	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
 endif
 ifeq (${HPC_HOST},lumi)
-	echo 'gpu-energy --diff' >> $@
+#	echo 'gpu-energy --diff' >> $@
 endif
 	echo 'echo "Finishing at `date`"' >> $@
 	sbatch --account=${GPU_PROJECT} ${SBATCH_ARGS} $@
