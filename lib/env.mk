@@ -235,9 +235,9 @@ MARIAN_SAVE_FREQ        ?= ${MARIAN_VALID_FREQ}
 MARIAN_DISP_FREQ        ?= ${MARIAN_VALID_FREQ}
 MARIAN_EARLY_STOPPING   ?= 10
 MARIAN_VALID_MINI_BATCH ?= 16
-MARIAN_MAXI_BATCH       ?= 500
+MARIAN_MAXI_BATCH       ?= 5
 MARIAN_DROPOUT          ?= 0.1
-MARIAN_MAX_LENGTH	?= 500
+MARIAN_MAX_LENGTH	?= 512
 MARIAN_ENC_DEPTH        ?= 6
 MARIAN_DEC_DEPTH        ?= 6
 MARIAN_ATT_HEADS        ?= 8
@@ -351,10 +351,10 @@ ifeq ($(GPU_AVAILABLE),1)
 else
   MARIAN_SCORER_FLAGS = -n1 --cpu-threads ${HPC_CORES} \
 			--quiet-translation \
-			--mini-batch ${HPC_CORES} --maxi-batch 100 --maxi-batch-sort src
+			--mini-batch ${HPC_CORES} --maxi-batch ${MARIAN_MAXI_BATCH} --maxi-batch-sort src
   MARIAN_DECODER_FLAGS = -b ${MARIAN_BEAM_SIZE} -n1 --cpu-threads ${HPC_CORES} -w ${MARIAN_CPU_DECODER_WORKSPACE} \
 			--quiet-translation \
-			--mini-batch ${HPC_CORES} --maxi-batch 100 --maxi-batch-sort src \
+			--mini-batch ${HPC_CORES} --maxi-batch ${MARIAN_MAXI_BATCH} --maxi-batch-sort src \
 			--max-length ${MARIAN_MAX_LENGTH} --max-length-crop
   MARIAN_EXTRA = --cpu-threads ${HPC_CORES}
 endif

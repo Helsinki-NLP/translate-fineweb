@@ -8,6 +8,31 @@ DATA_PREPARE_HPCPARAMS = CPUJOB_HPC_CORES=2 CPUJOB_HPC_MEM=16g
 DATA_ALIGN_HPCPARAMS = CPUJOB_HPC_CORES=128 CPUJOB_HPC_JOBS=20 CPUJOB_HPC_MEM=128g
 
 
+TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
+			GPUJOB_HPC_CORES=8 \
+			NR_GPUS=4 \
+			MARIAN_GPUS='0 1 2 3' \
+			HPC_TIME=36:00
+
+TRANSLATE_JOB_TYPE := submit
+
+
+## translation job options for a CPU job
+## NOTE: beam size is reduced to 1
+## NOTE: memory will only be sufficient for transformer-base models
+
+# TRANSLATE_JOB_OPTIONS := HPC_CORES=128 \
+# 			HPC_MEM=232g \
+# 			HPC_TIME=36:00 \
+# 			MARIAN_BEAM_SIZE=1
+# TRANSLATE_JOB_TYPE    := submitcpu
+
+## reduce number of cores to 32 for transformer-big models:
+# TRANSLATE_JOB_OPTIONS := HPC_CORES=32 HPC_MEM=224g HPC_TIME=24:00 MARIAN_BEAM_SIZE=1
+# TRANSLATE_JOB_TYPE    := submitcpu
+
+
+
 # CSCPROJECT    = project_2002982
 CSCPROJECT    = project_2002688
 # CSCPROJECT    = project_2005625

@@ -7,9 +7,6 @@ include ${REPOHOME}lib/env.mk
 include ${REPOHOME}lib/slurm.mk
 
 
-# /scratch/project_462000963/datasets/HuggingFaceFW/fineweb-edu/350BT/fineweb-edu_350BT_00100.jsonl.gz
-# 
-
 SRC ?= eng
 TRG ?= deu
 
@@ -24,7 +21,8 @@ FINEWEB_END   := 50
 FINEWEB_DIR     := /scratch/project_462000963/datasets/HuggingFaceFW/fineweb-edu/350BT
 FINEWEB_JSONL   := $(wordlist ${FINEWEB_START},${FINEWEB_END},$(sort $(notdir $(wildcard ${FINEWEB_DIR}/*.gz))))
 FINEWEB_TXT_DIR := fineweb-edu/350BT/${SRC}
-FINEWEB_TXT     := $(patsubst %.jsonl.gz,${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_JSONL})
+FINEWEB_TXT     := $(sort $(patsubst %.jsonl.gz,${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_JSONL}) \
+			$(wildcard ${FINEWEB_TXT_DIR}/*.txt.gz))
 
 
 
@@ -44,23 +42,6 @@ prepare-job: prepare-model
 
 MARIAN_MAX_LENGTH := 512
 
-## translation job options for a single GPU-node
-
-# TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=4 MARIAN_GPUS='0 1 2 3' HPC_TIME=24:00 MARIAN_BEAM_SIZE=6
-TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=8 MARIAN_GPUS='0 1 2 3 4 5 6 7' HPC_TIME=24:00 MARIAN_BEAM_SIZE=6
-# TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=128g GPUJOB_HPC_CORES=8 NR_GPUS=8 HPC_TIME=24:00 MARIAN_BEAM_SIZE=6
-TRANSLATE_JOB_TYPE    := submit
-
-## translation job options for a CPU job
-## NOTE: beam size is reduced to 1
-## NOTE: memory will only be sufficient for transformer-base models
-
-# TRANSLATE_JOB_OPTIONS := HPC_CORES=96 HPC_MEM=232g HPC_TIME=24:00 MARIAN_BEAM_SIZE=1 MARIAN_CPU_DECODER_WORKSPACE=1024
-# TRANSLATE_JOB_TYPE    := submitcpu
-
-## reduce number of cores to 32 for transformer-big models:
-# TRANSLATE_JOB_OPTIONS := HPC_CORES=32 HPC_MEM=224g HPC_TIME=24:00 MARIAN_BEAM_SIZE=1
-# TRANSLATE_JOB_TYPE    := submitcpu
 
 .PHONY: translate-job
 translate-job: prepare-first
@@ -71,13 +52,11 @@ translate-jobs: ${FINEWEB_TRANS_JOBS}
 
 .PHONY: translate-job-%
 translate-job-%:
-	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(word $(patsubst translate-job-%,%,$@),${FINEWEB_TRANS_JOBS}).${TRANSLATE_JOB_TYPE}
+	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(word $(patsubst translate-job-%,%,$@),${FINEWEB_TRANS}).${TRANSLATE_JOB_TYPE}
 
 .PHONY: ${FINEWEB_TRANS_JOBS}
 ${FINEWEB_TRANS_JOBS}:
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(@:-job=).${TRANSLATE_JOB_TYPE}
-
-
 
 
 
@@ -153,10 +132,20 @@ translate: prepare-model ${FINEWEB_TRANS}
 translate-first: prepare-model $(firstword ${FINEWEB_TRANS})
 
 
+## with dependency on the original jsonl file:
+#
+# ${FINEWEB_TXT}: ${FINEWEB_TXT_DIR}/%.txt.gz: ${FINEWEB_DIR}/%.jsonl.gz
+# 	mkdir -p $(dir $@)
+# 	python jsonl_to_text.py -i $< -l en | gzip -c > $@
 
-${FINEWEB_TXT}: ${FINEWEB_TXT_DIR}/%.txt.gz: ${FINEWEB_DIR}/%.jsonl.gz
+
+## without dependency
+
+${FINEWEB_TXT}:
 	mkdir -p $(dir $@)
-	python jsonl_to_text.py -i $< -l en | gzip -c > $@
+	python jsonl_to_text.py -l en \
+		-i $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$@) \
+	| gzip -c > $@
 
 
 
