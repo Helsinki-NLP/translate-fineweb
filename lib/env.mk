@@ -339,6 +339,12 @@ MARIAN_DECODER_WORKSPACE = 20000
 MARIAN_CPU_DECODER_WORKSPACE ?= 512
 
 
+## this does not seem to work on AMD
+## (otherwise, we could add this and skip MARIAN_GPUS)
+##
+# 		--num-devices ${NR_GPUS}
+
+
 ifeq ($(GPU_AVAILABLE),1)
   MARIAN_SCORER_FLAGS = -n1 -d ${MARIAN_GPUS} \
 			--quiet-translation -w ${MARIAN_DECODER_WORKSPACE} \

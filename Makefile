@@ -6,42 +6,71 @@ TOOLSDIR := ${REPOHOME}tools
 include ${REPOHOME}lib/env.mk
 include ${REPOHOME}lib/slurm.mk
 
+ifdef LOCAL_SCRATCH
+  TMPDIR = ${LOCAL_SCRATCH}
+endif
+
+
+## select input and output language
+## (SRC needs to be eng for now)
 
 SRC ?= eng
 TRG ?= deu
 
 LANGPAIR := ${SRC}-${TRG}
 
+## maximum input length (number sentence piece segments)
 
-## select fineweb shards to be used
+MARIAN_MAX_LENGTH := 512
+
+
+## select fineweb shards to be used (start and end, starting with 1)
 
 FINEWEB_START := 1
 FINEWEB_END   := 50
 
+## data sources (in original jsonl and in plain text for translation)
+## (only selected shards)
+
 FINEWEB_DIR     := /scratch/project_462000963/datasets/HuggingFaceFW/fineweb-edu/350BT
-FINEWEB_JSONL   := $(wordlist ${FINEWEB_START},${FINEWEB_END},$(sort $(notdir $(wildcard ${FINEWEB_DIR}/*.gz))))
+FINEWEB_JSONL   := $(wordlist ${FINEWEB_START},${FINEWEB_END},\
+			$(sort $(notdir $(wildcard ${FINEWEB_DIR}/*.gz))))
 FINEWEB_TXT_DIR := fineweb-edu/350BT/${SRC}
-FINEWEB_TXT     := $(sort $(patsubst %.jsonl.gz,${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_JSONL}) \
+FINEWEB_TXT     := $(sort \
+			$(patsubst %.jsonl.gz,${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_JSONL}) \
 			$(wildcard ${FINEWEB_TXT_DIR}/*.txt.gz))
 
 
 
-
+##---------------------------------------------------------------
+## top-level targets
+##
+## all: run translations for all shards (not very useful)
+## prepare: fetch best OPUS-MT model and prepare all input data
+## prepare-model: fetch best OPUS-MT model
+## prepare-first: fetch best OPUS-MT model and prepare the first data shard
+## translate: translate all data shards
+## translate-first: translate first shard only
+##
+## print-modelinfo: print information about the model selected from the dashboard
+##---------------------------------------------------------------
 
 .PHONY: all translate-job translate-jobs
 all: translate
 
 
+##---------------------------------------------------------------
+## submit SLURM jobs
+##
+## prepare-job: submit SLURM job to prepare all data shards
+## translate-job: submit a slurm job for the first shard
+## translate-jobs: submit slurm jobs for all shard
+## translate-job-NR: submit slurm job for shard number NR (replace with number)
+##---------------------------------------------------------------
 
 .PHONY: prepare-job
 prepare-job: prepare-model 
 	${MAKE} HPC_MEM=64g HPC_CORES=32 prepare.submitcpu
-
-
-## maximum input length (number sentence piece segments)
-
-MARIAN_MAX_LENGTH := 512
-
 
 .PHONY: translate-job
 translate-job: prepare-first
@@ -52,13 +81,22 @@ translate-jobs: ${FINEWEB_TRANS_JOBS}
 
 .PHONY: translate-job-%
 translate-job-%:
-	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(word $(patsubst translate-job-%,%,$@),${FINEWEB_TRANS}).${TRANSLATE_JOB_TYPE}
-
-.PHONY: ${FINEWEB_TRANS_JOBS}
-${FINEWEB_TRANS_JOBS}:
-	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(@:-job=).${TRANSLATE_JOB_TYPE}
+	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(patsubst translate-job-%,%-translate,$@).${TRANSLATE_JOB_TYPE}
 
 
+
+## translate with ctranslate2
+
+.PHONY: ct2-job
+ct2-job: prepare-model convert-model
+	${MAKE} ${CT2_JOB_OPTIONS} ct2-first.${CT2_JOB_TYPE}
+
+.PHONY: ct2-jobs
+ct2-jobs: ${FINEWEB_CT2_JOBS}
+
+.PHONY: ct2-job-%
+ct2-job-%:
+	${MAKE} ${CT2_JOB_OPTIONS} $(patsubst ct2-job-%,%-ct2,$@).${CT2_JOB_TYPE}
 
 
 ##---------------------------------------------------------------
@@ -101,18 +139,36 @@ print-modelinfo:
 
 
 
+## translation targets (using marian-decoder)
 
 FINEWEB_TRANS_DIR  := fineweb-edu/350BT/${LANGPAIR}/${MODELNAME}
 FINEWEB_TRANS      := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT})
 FINEWEB_TRANS_JOBS := $(addsuffix -job,${FINEWEB_TRANS})
 
 
-ifdef LOCAL_SCRATCH
-  TMPDIR = ${LOCAL_SCRATCH}
-endif
+## translation targets for ctranslate2
+
+FINEWEB_CT2_DIR  := fineweb-edu/350BT/ct2/${LANGPAIR}/${MODELNAME}
+FINEWEB_CT2      := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_CT2_DIR}/%,${FINEWEB_TXT})
+FINEWEB_CT2_JOBS := $(addsuffix -ct2-job,${FINEWEB_CT2})
+
+
+## auxiliary targets to submit SLURM jobs for translating each data shard
+
+.PHONY: ${FINEWEB_TRANS_JOBS}
+${FINEWEB_TRANS_JOBS}:
+	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(@:-job=).${TRANSLATE_JOB_TYPE}
+
+.PHONY: ${FINEWEB_TRANS_JOBS}
+${FINEWEB_CT2_JOBS}:
+	${MAKE} ${CT2_JOB_OPTIONS} $(@:-job=).${CT2_JOB_TYPE}
 
 
 
+
+
+## targets for fetching the translation model
+## and extract the data for translation
 
 .PHONY: prepare
 prepare: prepare-model ${FINEWEB_TXT}
@@ -120,10 +176,18 @@ prepare: prepare-model ${FINEWEB_TXT}
 .PHONY: prepare-first
 prepare-first: prepare-model $(firstword ${FINEWEB_TXT})
 
+.PHONY: %-prepare
+%-prepare: prepare-model
+	${MAKE} $(word $(@:-prepare=),${FINEWEB_TXT})
+
 .PHONY: prepare-model
 prepare-model: ${LANGPAIR}/${MODELNAME}/decoder.yml
 
+.PHONY: convert-model
+convert-model: ct2/${LANGPAIR}/${MODELNAME}/model.bin
 
+
+## targets for translating
 
 .PHONY: translate
 translate: prepare-model ${FINEWEB_TRANS}
@@ -131,15 +195,36 @@ translate: prepare-model ${FINEWEB_TRANS}
 .PHONY: translate-first
 translate-first: prepare-model $(firstword ${FINEWEB_TRANS})
 
+.PHONY: %-translate
+%-translate: prepare-model
+	${MAKE} $(word $(@:-translate=),${FINEWEB_TRANS})
 
-## with dependency on the original jsonl file:
+
+
+## targets for translating with ctransate2
+
+.PHONY: ct2
+ct2: prepare-model convert-model ${FINEWEB_CT2}
+
+.PHONY: ct2-first
+ct2-first: prepare-model convert-model $(firstword ${FINEWEB_CT2})
+
+.PHONY: %-ct2
+%-ct2: prepare-model convert-model
+	${MAKE} $(word $(@:-ct2=),${FINEWEB_CT2})
+
+
+
+
+## preparing a data file for translation
+## (a) with dependency on the original jsonl file:
 #
 # ${FINEWEB_TXT}: ${FINEWEB_TXT_DIR}/%.txt.gz: ${FINEWEB_DIR}/%.jsonl.gz
 # 	mkdir -p $(dir $@)
 # 	python jsonl_to_text.py -i $< -l en | gzip -c > $@
 
 
-## without dependency
+## (b) without dependency
 
 ${FINEWEB_TXT}:
 	mkdir -p $(dir $@)
@@ -149,6 +234,20 @@ ${FINEWEB_TXT}:
 
 
 
+ct2/${LANGPAIR}/${MODELNAME}/model.bin: ${LANGPAIR}/${MODELNAME}/decoder.yml
+ifneq (${MODELZIP},)
+	mkdir -p ct2/${LANGPAIR}
+ifeq (${MODELTYPE},HPLT-MT-models)
+	spm_export_vocab --model ${LANGPAIR}/${MODELNAME}/source.spm > ${LANGPAIR}/${MODELNAME}/vocab.txt
+	cut -f1 ${LANGPAIR}/${MODELNAME}/vocab.txt | scripts/vocab2yaml.py > ${LANGPAIR}/${MODELNAME}/vocab.yml
+	ct2-marian-converter \
+		--model_path ${LANGPAIR}/${MODELNAME}/model.npz \
+		--vocab_paths ${LANGPAIR}/${MODELNAME}/vocab.yml ${LANGPAIR}/${MODELNAME}/vocab.yml \
+		--output_dir $(dir $@)
+else
+	ct2-opus-mt-converter --model_dir $(dir $<) --output_dir $(dir $@)
+endif
+endif
 
 ## fetch the selected model
 
@@ -157,13 +256,13 @@ ifneq (${MODELZIP},)
 ifeq (${MODELTYPE},HPLT-MT-models)
 	mkdir -p ${dir $@}
 	wget -O ${dir $@}/model.npz https://huggingface.co/HPLT/translate-${MODELLANG}-v1.0-hplt/resolve/main/model.npz.best-chrf.npz?download=true
-	wget -O ${dir $@}/model.spm https://huggingface.co/HPLT/translate-${MODELLANG}-v1.0-hplt/resolve/main/model.${MODELLANG}.spm?download=true
+	wget -O ${dir $@}/source.spm https://huggingface.co/HPLT/translate-${MODELLANG}-v1.0-hplt/resolve/main/model.${MODELLANG}.spm?download=true
 	@echo 'relative-paths: true'     > $@
 	@echo 'models:'                 >> $@
 	@echo '  - model.npz'           >> $@
 	@echo 'vocabs:'                 >> $@
-	@echo '  - model.spm'           >> $@
-	@echo '  - model.spm'           >> $@
+	@echo '  - source.spm'          >> $@
+	@echo '  - source.spm'          >> $@
 	@echo 'beam-size: 6'            >> $@
 	@echo 'max-length: 512'         >> $@
 	@echo 'max-length-factor: 3'    >> $@
@@ -188,7 +287,8 @@ endif
 
 
 ## prepare input data for NMT decoder
-## (OPUS-MT models require to run a pre-processing script)
+## - OPUS-MT models require to run a pre-processing script
+## - HPLT-MT models don't need further pre-processing: just link the file
 
 ifeq (${MULTI_TARGET_MODEL},1)
   PREPROCESS_ARGS = ${SRC} ${TRG} ${LANGPAIR}/${MODELNAME}/source.spm
@@ -206,23 +306,61 @@ endif
 
 
 
-## OPUS-MT models require post-processing
+## OPUS-MT models require post-processing (merging subword-tokens)
 
 ifneq (${MODELTYPE},HPLT-MT-models)
   POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' |
 endif
 
 
-## translate
+## finally: target for translating a file
 
 ${FINEWEB_TRANS}: %.txt.gz: %.input.gz
 	${MAKE} prepare-model
 	${LOAD_ENV} && cd ${LANGPAIR}/${MODELNAME} && ${MARIAN_DECODER} \
 		-i ${PWD}/$< \
 		-c decoder.yml \
-		-d ${MARIAN_GPUS} \
 		${MARIAN_DECODER_FLAGS} |\
 	${POST_PROCESS} gzip -c > ${PWD}/$@
 
-# 		--num-devices ${NR_GPUS}
 
+
+## TOOD fix for HPLT-MT models!
+
+${TMPDIR}/${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
+	mkdir -p ${dir $@}
+ifeq (${MODELTYPE},HPLT-MT-models)
+	${GZCAT} $< | spm-encode > $@
+else
+	${GZCAT} $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
+endif
+
+
+
+
+
+MODEL_CT2_DIR := ct2/${LANGPAIR}/${MODELNAME}
+MODEL_SRC_SPM := ${LANGPAIR}/${MODELNAME}/source.spm
+
+# TMPDIR
+
+CT2_WORKERS    ?= 4
+CT2_DEVICE     ?= cpu
+CT2_BEAM_SIZE  ?= 4
+CT2_BATCH_SIZE ?= 64
+
+${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
+	${MAKE} prepare-model
+	${MAKE} convert-model
+	mkdir -p ${TMPDIR}/$(dir $@)
+	python3 translate_file.py \
+		-i $< \
+		-o ${TMPDIR}/${@:.gz=} \
+		-m ${MODEL_CT2_DIR} \
+		-s ${MODEL_SRC_SPM} \
+		-d ${CT2_DEVICE} \
+		-w ${CT2_WORKERS} \
+		-b ${CT2_BEAM_SIZE} \
+		-n ${CT2_BATCH_SIZE}
+	cat ${TMPDIR}/${@:.gz=} | sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | gzip -c > $@
+	rm -f ${TMPDIR}/${@:.gz=}

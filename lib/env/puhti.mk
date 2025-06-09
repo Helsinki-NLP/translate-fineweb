@@ -7,6 +7,51 @@
 DATA_PREPARE_HPCPARAMS = CPUJOB_HPC_CORES=2 CPUJOB_HPC_MEM=16g CPUJOB_HPC_DISK=3000
 DATA_ALIGN_HPCPARAMS = CPUJOB_HPC_CORES=4 CPUJOB_HPC_JOBS=2 CPUJOB_HPC_MEM=64g CPUJOB_HPC_DISK=3000
 
+TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
+			GPUJOB_HPC_CORES=4 \
+			NR_GPUS=4 \
+			MARIAN_GPUS='0 1 2 3' \
+			MARIAN_DECODER_WORKSPACE=-10000 \
+			HPC_TIME=72:00
+
+TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=32g \
+			GPUJOB_HPC_CORES=4 \
+			NR_GPUS=1 \
+			MARIAN_GPUS='0' \
+			MARIAN_DECODER_WORKSPACE=-10000 \
+			HPC_TIME=72:00
+
+TRANSLATE_JOB_TYPE := submit
+
+
+## job parameters for translating with ctranslate2
+
+CT2_JOB_OPTIONS := GPUJOB_HPC_MEM=32g \
+			GPU_MODULES='perl python-data intel-oneapi-mkl openmpi gcc/13.2.0 cuda/12.6.0' \
+			GPUJOB_HPC_CORES=4 \
+			NR_GPUS=4 \
+			CT2_WORKERS=4 \
+			CT2_DEVICE=cuda \
+			CT2_BEAM_SIZE=6 \
+			CT2_BATCH_SIZE=128 \
+			HPC_TIME=72:00
+
+CT2_JOB_TYPE := submit
+
+CT2_JOB_OPTIONS := GPUJOB_HPC_MEM=128g \
+			GPU_MODULES='perl python-data intel-oneapi-mkl openmpi gcc/13.2.0 cuda/12.6.0' \
+			CPU_MODULES='perl python-data intel-oneapi-mkl openmpi gcc/13.2.0' \
+			HPC_CORES=40 \
+			CT2_WORKERS=40 \
+			CT2_DEVICE=cpu \
+			CT2_BEAM_SIZE=6 \
+			CT2_BATCH_SIZE=40 \
+			HPC_TIME=72:00
+
+CT2_JOB_TYPE := submitcpu
+
+
+
 
 CSCPROJECT   = project_2002688
 # CSCPROJECT   = project_2002982
