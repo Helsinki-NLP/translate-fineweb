@@ -33,6 +33,8 @@ TRANSLATE_JOB_TYPE := submit
 
 
 
+
+
 CT2_JOB_OPTIONS := HPC_MEM=224g \
 			HPC_CORES=128 \
 			CT2_WORKERS=128 \
@@ -42,6 +44,19 @@ CT2_JOB_OPTIONS := HPC_MEM=224g \
 			HPC_TIME=36:00
 
 CT2_JOB_TYPE := submitcpu
+
+
+# CT2_JOB_OPTIONS := GPU_HPC_MEM=128g \
+# 			GPU_MODULES='gcc/10.4.0 cuda/12.6.1 cudnn openblas openmpi' \
+# 			GPU_HPC_CORES=16 \
+# 			CT2_WORKERS=4 \
+# 			CT2_DEVICE=cuda \
+# 			CT2_BEAM_SIZE=6 \
+# 			CT2_BATCH_SIZE=512 \
+# 			HPC_TIME=36:00
+
+# CT2_JOB_TYPE := submit
+
 
 
 
