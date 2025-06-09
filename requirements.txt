@@ -2,3 +2,4 @@ datatrove
 pyarrow
 loomchild-segment
 ctranslate2
+sentencepiece

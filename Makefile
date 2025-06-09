@@ -330,7 +330,7 @@ ${FINEWEB_TRANS}: %.txt.gz: %.input.gz
 ${TMPDIR}/${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
-	${GZCAT} $< | spm-encode > $@
+	${GZCAT} $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
 else
 	${GZCAT} $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
 endif

@@ -38,9 +38,9 @@ CT2_JOB_OPTIONS := GPUJOB_HPC_MEM=32g \
 
 CT2_JOB_TYPE := submit
 
-CT2_JOB_OPTIONS := GPUJOB_HPC_MEM=128g \
+CT2_JOB_OPTIONS := HPC_MEM=64g \
 			GPU_MODULES='perl python-data intel-oneapi-mkl openmpi gcc/13.2.0 cuda/12.6.0' \
-			CPU_MODULES='perl python-data intel-oneapi-mkl openmpi gcc/13.2.0' \
+			CPU_MODULES='perl python-data intel-oneapi-mkl openmpi gcc' \
 			HPC_CORES=40 \
 			CT2_WORKERS=40 \
 			CT2_DEVICE=cpu \

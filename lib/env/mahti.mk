@@ -33,6 +33,19 @@ TRANSLATE_JOB_TYPE := submit
 
 
 
+CT2_JOB_OPTIONS := HPC_MEM=224g \
+			HPC_CORES=128 \
+			CT2_WORKERS=128 \
+			CT2_DEVICE=cpu \
+			CT2_BEAM_SIZE=6 \
+			CT2_BATCH_SIZE=512 \
+			HPC_TIME=36:00
+
+CT2_JOB_TYPE := submitcpu
+
+
+
+
 # CSCPROJECT    = project_2002982
 CSCPROJECT    = project_2002688
 # CSCPROJECT    = project_2005625
