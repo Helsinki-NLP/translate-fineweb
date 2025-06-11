@@ -318,11 +318,12 @@ ifeq (${MODELTYPE},HPLT-MT-models)
 	spm_export_vocab --model ${LANGPAIR}/${MODELNAME}/source.spm > ${LANGPAIR}/${MODELNAME}/vocab.txt
 	cut -f1 ${LANGPAIR}/${MODELNAME}/vocab.txt | scripts/vocab2yaml.py > ${LANGPAIR}/${MODELNAME}/vocab.yml
 	ct2-marian-converter \
+		--quantization int8 \
 		--model_path ${LANGPAIR}/${MODELNAME}/model.npz \
 		--vocab_paths ${LANGPAIR}/${MODELNAME}/vocab.yml ${LANGPAIR}/${MODELNAME}/vocab.yml \
 		--output_dir $(dir $@)
 else
-	ct2-opus-mt-converter --model_dir $(dir $<) --output_dir $(dir $@)
+	ct2-opus-mt-converter --quantization int8 --model_dir $(dir $<) --output_dir $(dir $@)
 endif
 endif
 

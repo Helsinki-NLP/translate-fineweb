@@ -60,16 +60,16 @@ CT2_JOB_OPTIONS := GPUJOB_HPC_MEM=32g \
 
 CT2_JOB_TYPE := submit
 
-# CT2_JOB_OPTIONS := HPC_MEM=64g \
-#			LOAD_CT2_ENV='module load gcc/13.2.0 &&' \
-# 			HPC_CORES=40 \
-# 			CT2_WORKERS=40 \
-# 			CT2_DEVICE=cpu \
-# 			CT2_BEAM_SIZE=4 \
-# 			CT2_BATCH_SIZE=40 \
-# 			HPC_TIME=72:00
+CT2_JOB_OPTIONS := HPC_MEM=64g \
+			LOAD_CT2_ENV='module load gcc/13.2.0 &&' \
+			HPC_CORES=40 \
+			CT2_WORKERS=40 \
+			CT2_DEVICE=cpu \
+			CT2_BEAM_SIZE=4 \
+			CT2_BATCH_SIZE=40 \
+			HPC_TIME=72:00
 
-# CT2_JOB_TYPE := submitcpu
+CT2_JOB_TYPE := submitcpu
 
 
 
