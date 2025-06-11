@@ -24,6 +24,16 @@ TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
 TRANSLATE_JOB_TYPE := submit
 
 
+TRANSLATE_CPUJOB_OPTIONS := HPC_MEM=128g \
+			MARIAN_MINI_BATCH=40 \
+			MARIAN_MAXI_BATCH=1 \
+			HPC_CORES=40 \
+			MARIAN_CPU_DECODER_WORKSPACE=512 \
+			HPC_TIME=72:00
+
+
+
+
 ## job parameters for translating with ctranslate2
 
 CT2_JOB_OPTIONS := GPUJOB_HPC_MEM=32g \
@@ -87,8 +97,8 @@ ifneq (${wildcard /projappl/project_2001194/bin},)
   export PATH := ${APPLHOME}/bin:${PATH}
 endif
 
-MARIAN_HOME = ${REPOHOME}tools/browsermt/marian-dev/build
-MARIAN      = ${REPOHOME}tools/browsermt/marian-dev/build
+MARIAN_HOME = ${REPOHOME}tools/browsermt/marian-dev/build/
+MARIAN      = ${REPOHOME}tools/browsermt/marian-dev/build/
 
 # set LOCAL_SCRATCH to nvme disk if it exists
 ifdef SLURM_JOBID

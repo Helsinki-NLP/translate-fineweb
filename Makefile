@@ -92,6 +92,28 @@ translate-job-%:
 
 
 
+
+## translate with quantized model
+
+.PHONY: translate-int8-job
+translate-int8-job: prepare-first
+	${MAKE} ${TRANSLATE_JOB_OPTIONS} translate-int8-first.${TRANSLATE_JOB_TYPE}
+
+.PHONY: translate-int8-jobs
+translate-int8-jobs: ${FINEWEB_INT8_JOBS}
+
+.PHONY: translate-int8-job-%
+translate-int8-job-%:
+	${MAKE} ${TRANSLATE_JOB_OPTIONS} \
+		$(patsubst translate-int8-job-%,%-translate-int8,$@).${TRANSLATE_JOB_TYPE}
+
+.PHONY: translate-int8-cpujob-%
+translate-int8-cpujob-%:
+	${MAKE} ${TRANSLATE_CPUJOB_OPTIONS} \
+		$(patsubst translate-int8-cpujob-%,%-translate-int8,$@).submitcpu
+
+
+
 ## translate with ctranslate2
 
 .PHONY: ct2-job
@@ -156,6 +178,14 @@ FINEWEB_INPUT_JOBS := $(addsuffix -job,${FINEWEB_INPUT})
 FINEWEB_TRANS_JOBS := $(addsuffix -job,${FINEWEB_TRANS})
 
 
+
+## translation targets for quantized models
+
+FINEWEB_INT8       := $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_TRANS_DIR}/%.int8.gz,${FINEWEB_TXT})
+FINEWEB_INT8_JOBS  := $(addsuffix -job,${FINEWEB_INT8})
+
+
+
 ## translation targets for ctranslate2
 
 FINEWEB_CT2_DIR  := fineweb-edu/350BT/ct2/${LANGPAIR}/${MODELNAME}
@@ -200,6 +230,14 @@ prepare-input: ${FINEWEB_INPUT}
 .PHONY: prepare-model
 prepare-model: ${LANGPAIR}/${MODELNAME}/decoder.yml
 
+.PHONY: quantize-model
+quantize-model: ${LANGPAIR}/${MODELNAME}/model.intgemm8.bin
+
+${LANGPAIR}/${MODELNAME}/model.intgemm8.bin: ${LANGPAIR}/${MODELNAME}/decoder.yml
+	${BROWSERMT_CONVERT} -g intgemm8 -f $(wildcard ${LANGPAIR}/${MODELNAME}/*.npz) -t $@
+	sed 's/- .*\.npz/- model.intgemm8.bin/' \
+		< ${LANGPAIR}/${MODELNAME}/decoder.yml \
+		> ${LANGPAIR}/${MODELNAME}/decoder-int8.yml
 
 
 ## targets for translating
@@ -213,6 +251,20 @@ translate-first: $(firstword ${FINEWEB_TRANS})
 .PHONY: %-translate
 %-translate: prepare-model
 	${MAKE} $(word $(@:-translate=),${FINEWEB_TRANS})
+
+
+
+## targets for translating
+
+.PHONY: translate-int8
+translate-int8: ${FINEWEB_INT8}
+
+.PHONY: translate-int8-first
+translate-int8-first: $(firstword ${FINEWEB_INT8})
+
+.PHONY: %-translate-int8
+%-translate-int8: prepare-model quantize-model
+	${MAKE} $(word $(@:-translate-int8=),${FINEWEB_INT8})
 
 
 
@@ -346,6 +398,16 @@ ${FINEWEB_TRANS}: %.txt.gz: %.input.gz
 	${LOAD_ENV} && cd ${LANGPAIR}/${MODELNAME} && ${MARIAN_DECODER} \
 		-i ${PWD}/$< \
 		-c decoder.yml \
+		${MARIAN_DECODER_FLAGS} |\
+	${POST_PROCESS} gzip -c > ${PWD}/$@
+
+
+${FINEWEB_INT8}: %.int8.gz: %.input.gz
+	${MAKE} prepare-model
+	${LOAD_ENV} && cd ${LANGPAIR}/${MODELNAME} && ${MARIAN_DECODER} \
+		-i ${PWD}/$< \
+		-c decoder-int8.yml \
+		--int8 \
 		${MARIAN_DECODER_FLAGS} |\
 	${POST_PROCESS} gzip -c > ${PWD}/$@
 
