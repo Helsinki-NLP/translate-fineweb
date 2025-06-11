@@ -323,8 +323,8 @@ endif
 
 ## decoder flags (CPU and GPU variants)
 
-MARIAN_BEAM_SIZE = 6
-MARIAN_MINI_BATCH = 512
+MARIAN_BEAM_SIZE = 4
+MARIAN_MINI_BATCH = 128
 # MARIAN_MINI_BATCH = 768
 # MARIAN_MINI_BATCH = 1024
 # MARIAN_MINI_BATCH = 2048
@@ -451,6 +451,18 @@ install-perl-modules:
 .PHONY: install-extra-tools
 install-extra-tools:
 	${LOAD_BUILD_ENV} && ${MAKE} ${EXTRA_TOOLS}
+
+.PHONY: install-browsermt
+install-browsermt:
+	mkdir -p ${TOOLSDIR}/browsermt
+	cd ${TOOLSDIR}/browsermt && git clone https://github.com/browsermt/marian-dev.git
+	cd ${TOOLSDIR}/browsermt/marian-dev && git submodule update --init --recursive --remote
+	cp 	tools/browsermt/marian-dev/src/3rd_party/fbgemm/.gitmodules \
+		tools/browsermt/marian-dev/src/3rd_party/fbgemm/.gitmodules.backup
+	cat tools/browsermt/marian-dev/src/3rd_party/fbgemm/.gitmodules.backup |\
+	sed 's#google/googletest#google/googletest|	branch = main#' | tr '|' "\n" | uniq \
+	> tools/browsermt/marian-dev/src/3rd_party/fbgemm/.gitmodules
+	${LOAD_BUILD_ENV} && ${MAKE} ${BROWSERMT_TRAIN}
 
 
 ${TOOLSDIR}/LanguageCodes/ISO-639-3/bin/iso639:

@@ -4,6 +4,7 @@ import argparse
 import gzip
 import re
 import json
+import string
 
 from loomchild.segmenter import LoomchildSegmenter
 # from mosestokenizer import MosesSentenceSplitter
@@ -34,10 +35,13 @@ with gzip.open(args.input_file,'rt') as i:
         document = json.loads(line)
         if document['metadata']['language'] == lang:
 
+            # text = document['text']
+            
             ## a little trick to remove some newlines in the middle of a sentence
             ## TODO: does this break things more than it actually helps?
             text = re.sub("([A-Za-z,;])\n([a-z])", r"\1 \2", document['text'])
-            # text = document['text']
+            if len(text) > max_length:
+                text = document['text']
             
             if sentsplit:
                 segments = segmenter.get_document_segmentation(text)
@@ -48,5 +52,13 @@ with gzip.open(args.input_file,'rt') as i:
             else:
                 segments = text.splitlines()
 
-            print("\n".join(segments))        
+            # print("\n".join(segments))
+            for s in segments:
+                if len(s) > max_length:
+                    # p=re.findall('[^\s][^.?,;:]+.?', s)
+                    p=re.findall('[^\s][^'+ string.punctuation +']+.?', s)
+                    print("\n".join(p))
+                else:
+                    print(s)
+                    
             print("END_OF_DOCUMENT")
