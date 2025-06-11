@@ -41,7 +41,6 @@ FINEWEB_TXT     := $(sort \
 			$(wildcard ${FINEWEB_TXT_DIR}/*.txt.gz))
 
 
-
 ##---------------------------------------------------------------
 ## top-level targets
 ##
@@ -72,6 +71,14 @@ all: translate
 prepare-job: prepare-model 
 	${MAKE} HPC_MEM=64g HPC_CORES=32 prepare.submitcpu
 
+.PHONY: prepare-jobs
+prepare-jobs: ${FINEWEB_INPUT_JOBS}
+
+prepare-job-%:
+	${MAKE} HPC_CORES=1 HPC_MEM=4g HPC_TIME=2:00 \
+		$(patsubst prepare-job-%,%-prepare,$@).submitcpu
+
+
 .PHONY: translate-job
 translate-job: prepare-first
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} translate-first.${TRANSLATE_JOB_TYPE}
@@ -82,6 +89,28 @@ translate-jobs: ${FINEWEB_TRANS_JOBS}
 .PHONY: translate-job-%
 translate-job-%:
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(patsubst translate-job-%,%-translate,$@).${TRANSLATE_JOB_TYPE}
+
+
+
+
+## translate with quantized model
+
+.PHONY: translate-int8-job
+translate-int8-job: prepare-first
+	${MAKE} ${TRANSLATE_JOB_OPTIONS} translate-int8-first.${TRANSLATE_JOB_TYPE}
+
+.PHONY: translate-int8-jobs
+translate-int8-jobs: ${FINEWEB_INT8_JOBS}
+
+.PHONY: translate-int8-job-%
+translate-int8-job-%:
+	${MAKE} ${TRANSLATE_JOB_OPTIONS} \
+		$(patsubst translate-int8-job-%,%-translate-int8,$@).${TRANSLATE_JOB_TYPE}
+
+.PHONY: translate-int8-cpujob-%
+translate-int8-cpujob-%:
+	${MAKE} ${TRANSLATE_CPUJOB_OPTIONS} \
+		$(patsubst translate-int8-cpujob-%,%-translate-int8,$@).submitcpu
 
 
 
@@ -142,8 +171,19 @@ print-modelinfo:
 ## translation targets (using marian-decoder)
 
 FINEWEB_TRANS_DIR  := fineweb-edu/350BT/${LANGPAIR}/${MODELNAME}
+FINEWEB_INPUT      := $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_TRANS_DIR}/%.input.gz,${FINEWEB_TXT})
 FINEWEB_TRANS      := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT})
+
+FINEWEB_INPUT_JOBS := $(addsuffix -job,${FINEWEB_INPUT})
 FINEWEB_TRANS_JOBS := $(addsuffix -job,${FINEWEB_TRANS})
+
+
+
+## translation targets for quantized models
+
+FINEWEB_INT8       := $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_TRANS_DIR}/%.int8.gz,${FINEWEB_TXT})
+FINEWEB_INT8_JOBS  := $(addsuffix -job,${FINEWEB_INT8})
+
 
 
 ## translation targets for ctranslate2
@@ -159,11 +199,9 @@ FINEWEB_CT2_JOBS := $(addsuffix -ct2-job,${FINEWEB_CT2})
 ${FINEWEB_TRANS_JOBS}:
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(@:-job=).${TRANSLATE_JOB_TYPE}
 
-.PHONY: ${FINEWEB_TRANS_JOBS}
-${FINEWEB_CT2_JOBS}:
-	${MAKE} ${CT2_JOB_OPTIONS} $(@:-job=).${CT2_JOB_TYPE}
-
-
+.PHONY: ${FINEWEB_INPUT_JOBS}
+${FINEWEB_INPUT_JOBS}:
+	${MAKE} HPC_CORES=1 HPC_MEM=4g HPC_TIME=2:00 $(@:-job=).submitcpu
 
 
 
@@ -171,29 +209,44 @@ ${FINEWEB_CT2_JOBS}:
 ## and extract the data for translation
 
 .PHONY: prepare
-prepare: prepare-model ${FINEWEB_TXT}
+prepare: prepare-model # ${FINEWEB_TXT}
+	${MAKE} prepare-input
 
 .PHONY: prepare-first
-prepare-first: prepare-model $(firstword ${FINEWEB_TXT})
+prepare-first: prepare-model # $(firstword ${FINEWEB_TXT})
+	${MAKE} $(firstword ${FINEWEB_INPUT})
 
 .PHONY: %-prepare
 %-prepare: prepare-model
-	${MAKE} $(word $(@:-prepare=),${FINEWEB_TXT})
+	${MAKE} $(word $(@:-prepare=),${FINEWEB_INPUT})
+# 	${MAKE} $(word $(@:-prepare=),${FINEWEB_TXT})
+
+.PHONY: prepare-text
+prepare-text: ${FINEWEB_TXT}
+
+.PHONY: prepare-input
+prepare-input: ${FINEWEB_INPUT}
 
 .PHONY: prepare-model
 prepare-model: ${LANGPAIR}/${MODELNAME}/decoder.yml
 
-.PHONY: convert-model
-convert-model: ct2/${LANGPAIR}/${MODELNAME}/model.bin
+.PHONY: quantize-model
+quantize-model: ${LANGPAIR}/${MODELNAME}/model.intgemm8.bin
+
+${LANGPAIR}/${MODELNAME}/model.intgemm8.bin: ${LANGPAIR}/${MODELNAME}/decoder.yml
+	${BROWSERMT_CONVERT} -g intgemm8 -f $(wildcard ${LANGPAIR}/${MODELNAME}/*.npz) -t $@
+	sed 's/- .*\.npz/- model.intgemm8.bin/' \
+		< ${LANGPAIR}/${MODELNAME}/decoder.yml \
+		> ${LANGPAIR}/${MODELNAME}/decoder-int8.yml
 
 
 ## targets for translating
 
 .PHONY: translate
-translate: prepare-model ${FINEWEB_TRANS}
+translate: ${FINEWEB_TRANS}
 
 .PHONY: translate-first
-translate-first: prepare-model $(firstword ${FINEWEB_TRANS})
+translate-first: $(firstword ${FINEWEB_TRANS})
 
 .PHONY: %-translate
 %-translate: prepare-model
@@ -201,7 +254,24 @@ translate-first: prepare-model $(firstword ${FINEWEB_TRANS})
 
 
 
+## targets for translating
+
+.PHONY: translate-int8
+translate-int8: ${FINEWEB_INT8}
+
+.PHONY: translate-int8-first
+translate-int8-first: $(firstword ${FINEWEB_INT8})
+
+.PHONY: %-translate-int8
+%-translate-int8: prepare-model quantize-model
+	${MAKE} $(word $(@:-translate-int8=),${FINEWEB_INT8})
+
+
+
 ## targets for translating with ctransate2
+
+.PHONY: convert-model
+convert-model: ct2/${LANGPAIR}/${MODELNAME}/model.bin
 
 .PHONY: ct2
 ct2: prepare-model convert-model ${FINEWEB_CT2}
@@ -212,6 +282,10 @@ ct2-first: prepare-model convert-model $(firstword ${FINEWEB_CT2})
 .PHONY: %-ct2
 %-ct2: prepare-model convert-model
 	${MAKE} $(word $(@:-ct2=),${FINEWEB_CT2})
+
+.PHONY: ${FINEWEB_CT2_JOBS}
+${FINEWEB_CT2_JOBS}:
+	${MAKE} ${CT2_JOB_OPTIONS} $(@:-job=).${CT2_JOB_TYPE}
 
 
 
@@ -234,6 +308,9 @@ ${FINEWEB_TXT}:
 
 
 
+## convert to ctranslate2
+## TODO: does the conversion from spm to vocab.yml work correctly?
+
 ct2/${LANGPAIR}/${MODELNAME}/model.bin: ${LANGPAIR}/${MODELNAME}/decoder.yml
 ifneq (${MODELZIP},)
 	mkdir -p ct2/${LANGPAIR}
@@ -241,11 +318,12 @@ ifeq (${MODELTYPE},HPLT-MT-models)
 	spm_export_vocab --model ${LANGPAIR}/${MODELNAME}/source.spm > ${LANGPAIR}/${MODELNAME}/vocab.txt
 	cut -f1 ${LANGPAIR}/${MODELNAME}/vocab.txt | scripts/vocab2yaml.py > ${LANGPAIR}/${MODELNAME}/vocab.yml
 	ct2-marian-converter \
+		--quantization int8 \
 		--model_path ${LANGPAIR}/${MODELNAME}/model.npz \
 		--vocab_paths ${LANGPAIR}/${MODELNAME}/vocab.yml ${LANGPAIR}/${MODELNAME}/vocab.yml \
 		--output_dir $(dir $@)
 else
-	ct2-opus-mt-converter --model_dir $(dir $<) --output_dir $(dir $@)
+	ct2-opus-mt-converter --quantization int8 --model_dir $(dir $<) --output_dir $(dir $@)
 endif
 endif
 
@@ -263,7 +341,7 @@ ifeq (${MODELTYPE},HPLT-MT-models)
 	@echo 'vocabs:'                 >> $@
 	@echo '  - source.spm'          >> $@
 	@echo '  - source.spm'          >> $@
-	@echo 'beam-size: 6'            >> $@
+	@echo 'beam-size: 4'            >> $@
 	@echo 'max-length: 512'         >> $@
 	@echo 'max-length-factor: 3'    >> $@
 	@echo 'max-length-crop: true'   >> $@
@@ -299,9 +377,10 @@ endif
 ${FINEWEB_TRANS_DIR}/%.input.gz: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
-	ln -s $< $@
+#	cd $(dir $@) && ln -s $(PWD)/$< $(notdir $@)
+	${GZCAT} $< | python segment.py | gzip -c > $@
 else
-	${GZCAT} $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
+	${GZCAT} $< | python segment.py | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
 endif
 
 
@@ -324,15 +403,24 @@ ${FINEWEB_TRANS}: %.txt.gz: %.input.gz
 	${POST_PROCESS} gzip -c > ${PWD}/$@
 
 
+${FINEWEB_INT8}: %.int8.gz: %.input.gz
+	${MAKE} prepare-model
+	${LOAD_ENV} && cd ${LANGPAIR}/${MODELNAME} && ${MARIAN_DECODER} \
+		-i ${PWD}/$< \
+		-c decoder-int8.yml \
+		--int8 \
+		${MARIAN_DECODER_FLAGS} |\
+	${POST_PROCESS} gzip -c > ${PWD}/$@
 
-## TOOD fix for HPLT-MT models!
+
+
 
 ${TMPDIR}/${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
-	${GZCAT} $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
+	${GZCAT} $< | python segment.py | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
 else
-	${GZCAT} $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
+	${GZCAT} $< | python segment.py | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
 endif
 
 
@@ -353,7 +441,7 @@ ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
 	${MAKE} prepare-model
 	${MAKE} convert-model
 	mkdir -p ${TMPDIR}/$(dir $@)
-	python3 translate_file.py \
+	${LOAD_CT2_ENV} python3 translate_file.py \
 		-i $< \
 		-o ${TMPDIR}/${@:.gz=} \
 		-m ${MODEL_CT2_DIR} \

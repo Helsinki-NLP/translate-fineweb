@@ -140,7 +140,7 @@ endif
 ## setup for compiling marian-nmt
 
 MARIAN_BUILD_MODULES  = gcc cuda cudnn openblas openmpi cmake
-LOAD_MARIAN_BUILD_ENV = module purge && module load ${MARIAN_BUILD_MODULES}
+LOAD_MARIAN_BUILD_ENV = module load ${MARIAN_BUILD_MODULES}
 
 # /appl/spack/v017/install-tree/gcc-11.2.0/gperf-3.1-cxa2un
 
@@ -173,7 +173,7 @@ MARIAN_BUILD_OPTIONS  = -DCUDNN=ON \
 LOAD_EXTRACTLEX_BUILD_ENV = module load cmake boost
 
 # LOAD_COMET_ENV = module load python-data pytorch cuda &&
-# LOAD_COMET_ENV = module purge && module load pytorch && singularity_wrapper exec
+# LOAD_COMET_ENV = module load pytorch && singularity_wrapper exec
 # COMET_SCORE = ${HOME}/.local/bin/comet-score
 
-LOAD_COMET_ENV = module purge && module load pytorch &&
+LOAD_COMET_ENV = module load pytorch &&

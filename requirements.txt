@@ -3,3 +3,5 @@ pyarrow
 loomchild-segment
 ctranslate2
 sentencepiece
+nvidia-cublas-cu12
+nvidia-cudnn-cu12

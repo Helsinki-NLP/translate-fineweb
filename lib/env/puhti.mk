@@ -14,7 +14,7 @@ TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
 			MARIAN_DECODER_WORKSPACE=-10000 \
 			HPC_TIME=72:00
 
-TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=32g \
+TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
 			GPUJOB_HPC_CORES=4 \
 			NR_GPUS=1 \
 			MARIAN_GPUS='0' \
@@ -24,27 +24,48 @@ TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=32g \
 TRANSLATE_JOB_TYPE := submit
 
 
+TRANSLATE_CPUJOB_OPTIONS := HPC_MEM=128g \
+			MARIAN_MINI_BATCH=40 \
+			MARIAN_MAXI_BATCH=1 \
+			HPC_CORES=40 \
+			MARIAN_CPU_DECODER_WORKSPACE=512 \
+			HPC_TIME=72:00
+
+
+
+
 ## job parameters for translating with ctranslate2
 
 CT2_JOB_OPTIONS := GPUJOB_HPC_MEM=32g \
-			GPU_MODULES='perl python-data intel-oneapi-mkl openmpi gcc/13.2.0 cuda/12.6.0' \
+			LOAD_CT2_ENV='module load gcc/13.2.0 cuda/12.6.0 &&' \
 			GPUJOB_HPC_CORES=4 \
 			NR_GPUS=4 \
 			CT2_WORKERS=4 \
 			CT2_DEVICE=cuda \
-			CT2_BEAM_SIZE=6 \
+			CT2_BEAM_SIZE=4 \
+			CT2_BATCH_SIZE=128 \
+			HPC_TIME=72:00
+
+CT2_JOB_TYPE := submit
+
+CT2_JOB_OPTIONS := GPUJOB_HPC_MEM=32g \
+			LOAD_CT2_ENV='module load gcc/13.2.0 cuda/12.6.0 &&' \
+			GPUJOB_HPC_CORES=4 \
+			NR_GPUS=1 \
+			CT2_WORKERS=1 \
+			CT2_DEVICE=cuda \
+			CT2_BEAM_SIZE=4 \
 			CT2_BATCH_SIZE=128 \
 			HPC_TIME=72:00
 
 CT2_JOB_TYPE := submit
 
 CT2_JOB_OPTIONS := HPC_MEM=64g \
-			GPU_MODULES='perl python-data intel-oneapi-mkl openmpi gcc/13.2.0 cuda/12.6.0' \
-			CPU_MODULES='perl python-data intel-oneapi-mkl openmpi gcc' \
+			LOAD_CT2_ENV='module load gcc/13.2.0 &&' \
 			HPC_CORES=40 \
 			CT2_WORKERS=40 \
 			CT2_DEVICE=cpu \
-			CT2_BEAM_SIZE=6 \
+			CT2_BEAM_SIZE=4 \
 			CT2_BATCH_SIZE=40 \
 			HPC_TIME=72:00
 
@@ -76,6 +97,8 @@ ifneq (${wildcard /projappl/project_2001194/bin},)
   export PATH := ${APPLHOME}/bin:${PATH}
 endif
 
+MARIAN_HOME = ${REPOHOME}tools/browsermt/marian-dev/build/
+MARIAN      = ${REPOHOME}tools/browsermt/marian-dev/build/
 
 # set LOCAL_SCRATCH to nvme disk if it exists
 ifdef SLURM_JOBID
@@ -127,10 +150,10 @@ endif
 
 
 BUILD_MODULES  = StdEnv perl python-data cuda intel-oneapi-mkl openmpi cmake
-LOAD_BUILD_ENV = module purge && module load ${BUILD_MODULES} && module list
+LOAD_BUILD_ENV = module load ${BUILD_MODULES} && module list
 
 MARIAN_BUILD_MODULES  = StdEnv perl python-data cuda intel-oneapi-mkl openmpi cmake
-LOAD_MARIAN_BUILD_ENV = module purge && module load ${MARIAN_BUILD_MODULES} && module list
+LOAD_MARIAN_BUILD_ENV = module load ${MARIAN_BUILD_MODULES} && module list
 MARIAN_BUILD_OPTIONS  =	-DTcmalloc_INCLUDE_DIR=/appl/spack/install-tree/gcc-8.3.0/gperftools-2.7-5w7w2c/include \
 			-DTcmalloc_LIBRARY=/appl/spack/install-tree/gcc-8.3.0/gperftools-2.7-5w7w2c/lib/libtcmalloc.so \
 			-DTCMALLOC_LIB=/appl/spack/install-tree/gcc-8.3.0/gperftools-2.7-5w7w2c/lib/libtcmalloc.so \
