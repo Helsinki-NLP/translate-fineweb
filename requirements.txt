@@ -1,7 +1,8 @@
 datatrove
 pyarrow
+mosestokenizer
 loomchild-segment
 ctranslate2
 sentencepiece
-nvidia-cublas-cu12
-nvidia-cudnn-cu12
+# nvidia-cublas-cu12
+# nvidia-cudnn-cu12

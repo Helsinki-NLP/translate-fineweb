@@ -378,9 +378,9 @@ ${FINEWEB_TRANS_DIR}/%.input.gz: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
 #	cd $(dir $@) && ln -s $(PWD)/$< $(notdir $@)
-	${GZCAT} $< | python segment.py | gzip -c > $@
+	python segment.py -i $< | gzip -c > $@
 else
-	${GZCAT} $< | python segment.py | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
+	python segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
 endif
 
 
@@ -418,9 +418,9 @@ ${FINEWEB_INT8}: %.int8.gz: %.input.gz
 ${TMPDIR}/${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
-	${GZCAT} $< | python segment.py | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
+	python segment.py -i $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
 else
-	${GZCAT} $< | python segment.py | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
+	python segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
 endif
 
 
@@ -450,5 +450,6 @@ ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
 		-w ${CT2_WORKERS} \
 		-b ${CT2_BEAM_SIZE} \
 		-n ${CT2_BATCH_SIZE}
+	mkdir -p $(dir $@)
 	cat ${TMPDIR}/${@:.gz=} | sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | gzip -c > $@
 	rm -f ${TMPDIR}/${@:.gz=}

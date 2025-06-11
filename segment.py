@@ -1,10 +1,12 @@
 
-import sys, argparse, re, string, signal
+import sys, argparse, re, string, signal, gzip
 from loomchild.segmenter import LoomchildSegmenter
+from mosestokenizer import MosesSentenceSplitter
 
 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 parser = argparse.ArgumentParser(description='fetch fineweb data and prepare for translation')
+parser.add_argument('-i', '--input-file', help='input-file', type=str)
 parser.add_argument('-l', '--lang', help='document languages (default=en)', type=str, default='en')
 parser.add_argument('-m', '--max-length', help='length threshold in characters (default=1024)', type=int, default=1024)
 parser.add_argument('-s', '--segment-into-sentences', help='split documents into sentences', action='store_true')
@@ -16,27 +18,37 @@ lang = args.lang
 
 sentsplit = args.segment_into_sentences
 segmenter = LoomchildSegmenter(lang)
-
+moses_segmenter = MosesSentenceSplitter(lang)
 
 ## max line length: split into sentences if this limit is exceeded
 ## (this does nothing when sentence splitting is activated, no cutting or leaving out long sentences!)
 max_length = args.max_length
 
 
-for text in sys.stdin:
-
-    if not text:
-        continue
+with gzip.open(args.input_file,'rt') as i:
+    for text in i:
+        text = text.strip()
+        if not text:
+            continue
     
-    if sentsplit:
-        segments = segmenter.get_document_segmentation(text)
-    elif len(text) > max_length:
-        segments = segmenter.get_document_segmentation(text)
-    else:
-        segments = text.splitlines()
-
+        if sentsplit:
+            try:
+                # segments = segmenter.get_segmentation(text)
+                segments = moses_segmenter(text)
+            except:
+                segments = [text]
+        elif len(text) > max_length:
+            try:
+                # segments = segmenter.get_segmentation(text)
+                segments = moses_segmenter(text)
+            except:
+                segments = [text]
+        else:
+            segments = [text]
+            
         # print("\n".join(segments))
         for s in segments:
+            s = s.strip()
             if len(s) > max_length:
                 # p=re.findall('[^\s][^.?,;:]+.?', s)
                 p=re.findall('[^\s][^'+ string.punctuation +']+.?', s)
