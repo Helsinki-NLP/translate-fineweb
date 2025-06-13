@@ -83,13 +83,9 @@ prepare-job-%:
 translate-job: prepare-first
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} translate-first.${TRANSLATE_JOB_TYPE}
 
-.PHONY: translate-jobs
-translate-jobs: ${FINEWEB_TRANS_JOBS}
-
 .PHONY: translate-job-%
 translate-job-%:
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(patsubst translate-job-%,%-translate,$@).${TRANSLATE_JOB_TYPE}
-
 
 
 
@@ -98,9 +94,6 @@ translate-job-%:
 .PHONY: translate-int8-job
 translate-int8-job: prepare-first
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} translate-int8-first.${TRANSLATE_JOB_TYPE}
-
-.PHONY: translate-int8-jobs
-translate-int8-jobs: ${FINEWEB_INT8_JOBS}
 
 .PHONY: translate-int8-job-%
 translate-int8-job-%:
@@ -153,12 +146,14 @@ MODELLANG := $(word 4,$(subst /, ,${MODELZIP}))
 
 MULTI_TARGET_MODEL := ${shell wget -qq -O - ${MODELINFO} | grep 'use-target-labels' | wc -l}
 ifneq (${MULTI_TARGET_MODEL},0)
-  TARGET_LANG_LABEL := ${shell wget -qq -O - ${MODELINFO} | grep -o '>>${TRG}.*<<'}
+#  TARGET_LANG_LABEL := ${shell wget -qq -O - ${MODELINFO} | grep -o '>>${TRG}.*<<'}
+  TARGET_LANG_LABEL := '>>${TRG}<<'
 endif
 
 
 .PHONY: print-modelinfo
 print-modelinfo:
+	@echo ${MARIAN_HOME}
 	@echo ${MODELTYPE}
 	@echo ${MODELNAME}
 	@echo ${MODELZIP}
@@ -193,7 +188,15 @@ FINEWEB_CT2      := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_CT2_DIR}/%,${FINEW
 FINEWEB_CT2_JOBS := $(addsuffix -ct2-job,${FINEWEB_CT2})
 
 
+## make sure that translation files are not deleted
+## in case the job times out
+
+.PRECIOUS: ${FINEWEB_TRANS} ${FINEWEB_INT8} ${FINEWEB_CT2}
+
 ## auxiliary targets to submit SLURM jobs for translating each data shard
+
+.PHONY: translate-jobs
+translate-jobs: ${FINEWEB_TRANS_JOBS}
 
 .PHONY: ${FINEWEB_TRANS_JOBS}
 ${FINEWEB_TRANS_JOBS}:
@@ -202,6 +205,15 @@ ${FINEWEB_TRANS_JOBS}:
 .PHONY: ${FINEWEB_INPUT_JOBS}
 ${FINEWEB_INPUT_JOBS}:
 	${MAKE} HPC_CORES=1 HPC_MEM=4g HPC_TIME=2:00 $(@:-job=).submitcpu
+
+
+.PHONY: translate-int8-jobs
+translate-int8-jobs: ${FINEWEB_INT8_JOBS}
+
+.PHONY: ${FINEWEB_INT8_JOBS}
+${FINEWEB_INT8_JOBS}:
+	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(@:-job=).${TRANSLATE_JOB_TYPE}
+
 
 
 

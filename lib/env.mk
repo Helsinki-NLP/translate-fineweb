@@ -122,7 +122,12 @@ PIGZ           ?= ${shell which pigz      2>/dev/null || echo ${TOOLSDIR}/pigz/p
 TERASHUF       ?= ${shell which terashuf  2>/dev/null || echo ${TOOLSDIR}/terashuf/terashuf}
 JQ             ?= ${shell which jq        2>/dev/null || echo ${TOOLSDIR}/jq/jq}
 PROTOC         ?= ${shell which protoc    2>/dev/null || echo ${TOOLSDIR}/protobuf/bin/protoc}
-MARIAN         ?= ${shell which marian    2>/dev/null || echo ${TOOLSDIR}/marian-dev/build/marian}
+MARIAN         := ${shell  which ${TOOLSDIR}/marian-dev/build/marian 2>/dev/null \
+			|| which ${TOOLSDIR}/browsermt/marian-dev/build/marian 2>/dev/null \
+			|| which ${TOOLSDIR}/marian-dev/build/marian 2>/dev/null \
+			|| which marian 2>/dev/null}
+# MARIAN         ?= ${shell which marian    2>/dev/null || echo ${TOOLSDIR}/browsermt/marian-dev/build/marian}
+# MARIAN         ?= ${shell which marian    2>/dev/null || echo ${TOOLSDIR}/marian-dev/build/marian}
 MARIAN_HOME    ?= $(dir ${MARIAN})
 SPM_HOME       ?= ${dir ${MARIAN}}
 FASTALIGN      ?= ${shell which fast_align  2>/dev/null || echo ${TOOLSDIR}/fast_align/build/fast_align}
@@ -199,7 +204,7 @@ ROCM_SMI := ${shell which rocm-smi 2>/dev/null}
 
 ifneq ($(wildcard ${NVIDIA_SMI}),)
 ifeq (${shell nvidia-smi | grep failed | wc -l},1)
-  MARIAN_BUILD_OPTIONS += -DCOMPILE_CUDA=off
+#  MARIAN_BUILD_OPTIONS += -DCOMPILE_CUDA=off
   LOAD_ENV = ${LOAD_CPU_ENV}
 else
   GPU_AVAILABLE = 1
@@ -213,7 +218,7 @@ else
   LOAD_ENV = ${LOAD_GPU_ENV}
 endif
 else
-  MARIAN_BUILD_OPTIONS += -DCOMPILE_CUDA=off
+#  MARIAN_BUILD_OPTIONS += -DCOMPILE_CUDA=off
   LOAD_ENV = ${LOAD_CPU_ENV}
 endif
 
@@ -455,14 +460,27 @@ install-extra-tools:
 .PHONY: install-browsermt
 install-browsermt:
 	mkdir -p ${TOOLSDIR}/browsermt
-	cd ${TOOLSDIR}/browsermt && git clone https://github.com/browsermt/marian-dev.git
-	cd ${TOOLSDIR}/browsermt/marian-dev && git submodule update --init --recursive --remote
+	-cd ${TOOLSDIR}/browsermt && git clone https://github.com/browsermt/marian-dev.git
+	-cd ${TOOLSDIR}/browsermt/marian-dev && git submodule update --init --recursive --remote
 	cp 	tools/browsermt/marian-dev/src/3rd_party/fbgemm/.gitmodules \
 		tools/browsermt/marian-dev/src/3rd_party/fbgemm/.gitmodules.backup
 	cat tools/browsermt/marian-dev/src/3rd_party/fbgemm/.gitmodules.backup |\
 	sed 's#google/googletest#google/googletest|	branch = main#' | tr '|' "\n" | uniq \
 	> tools/browsermt/marian-dev/src/3rd_party/fbgemm/.gitmodules
-	${LOAD_BUILD_ENV} && ${MAKE} ${BROWSERMT_TRAIN}
+	${LOAD_BUILD_ENV} && ${MAKE} NVIDIA_SMI=nvidia-smi ${BROWSERMT_TRAIN}
+
+
+install-marian:
+	mkdir -p ${TOOLSDIR}
+	-cd ${TOOLSDIR} && git clone https://github.com/marian-nmt/marian-dev.git
+	-cd ${TOOLSDIR}/marian-dev && git submodule update --init --recursive --remote
+	cp 	tools/marian-dev/src/3rd_party/fbgemm/.gitmodules \
+		tools/marian-dev/src/3rd_party/fbgemm/.gitmodules.backup
+	cat tools/marian-dev/src/3rd_party/fbgemm/.gitmodules.backup |\
+	sed 's#google/googletest#google/googletest|	branch = main#' | tr '|' "\n" | uniq \
+	> tools/marian-dev/src/3rd_party/fbgemm/.gitmodules
+	${LOAD_BUILD_ENV} && ${MAKE} NVIDIA_SMI=nvidia-smi ${TOOLSDIR}/marian-dev/build/marian
+
 
 
 ${TOOLSDIR}/LanguageCodes/ISO-639-3/bin/iso639:
@@ -510,7 +528,7 @@ ${TOOLSDIR}/marian-dev/build/marian: # ${PROTOC}
 
 ${TOOLSDIR}/browsermt/marian-dev/build/marian: # ${PROTOC}
 	mkdir -p ${dir $@}
-	cd ${dir $@} && ${LOAD_MARIAN_BUILD_ENV} && cmake ..
+	cd ${dir $@} && ${LOAD_MARIAN_BUILD_ENV} && cmake  -DUSE_SENTENCEPIECE=on ${MARIAN_BUILD_OPTIONS} ..
 	${LOAD_MARIAN_BUILD_ENV} && ${MAKE} -C ${dir $@} -j8
 
 ## OBSOLETE?
