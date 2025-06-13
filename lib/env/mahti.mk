@@ -17,6 +17,15 @@ TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
 TRANSLATE_JOB_TYPE := submit
 
 
+TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
+			GPUJOB_HPC_CORES=8 \
+			NR_GPUS=1 \
+			MARIAN_GPUS='0' \
+			HPC_TIME=36:00
+
+TRANSLATE_JOB_TYPE := submit
+
+
 ## translation job options for a CPU job
 ## NOTE: beam size is reduced to 1
 ## NOTE: memory will only be sufficient for transformer-base models
@@ -162,9 +171,10 @@ MARIAN_BUILD_OPTIONS  = -DCUDNN=ON \
 			-DUSE_DOXYGEN=OFF \
 			-DCOMPILE_TURING=OFF \
 			-DCOMPILE_VOLTA=OFF \
-			-DCOMPILE_PASCAL=OFF \
-			-DUSE_FBGEMM=1 \
-			-DFBGEMM_STATIC=1
+			-DCOMPILE_PASCAL=OFF
+
+#			-DUSE_FBGEMM=1 \
+#			-DFBGEMM_STATIC=1
 
 
 ## setup for compiling extract-lex from marian-nmt
