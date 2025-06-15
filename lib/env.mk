@@ -122,8 +122,7 @@ PIGZ           ?= ${shell which pigz      2>/dev/null || echo ${TOOLSDIR}/pigz/p
 TERASHUF       ?= ${shell which terashuf  2>/dev/null || echo ${TOOLSDIR}/terashuf/terashuf}
 JQ             ?= ${shell which jq        2>/dev/null || echo ${TOOLSDIR}/jq/jq}
 PROTOC         ?= ${shell which protoc    2>/dev/null || echo ${TOOLSDIR}/protobuf/bin/protoc}
-MARIAN         := ${shell  which ${TOOLSDIR}/marian-dev/build/marian 2>/dev/null \
-			|| which ${TOOLSDIR}/browsermt/marian-dev/build/marian 2>/dev/null \
+MARIAN         := ${shell  which ${TOOLSDIR}/browsermt/marian-dev/build/marian 2>/dev/null \
 			|| which ${TOOLSDIR}/marian-dev/build/marian 2>/dev/null \
 			|| which marian 2>/dev/null}
 # MARIAN         ?= ${shell which marian    2>/dev/null || echo ${TOOLSDIR}/browsermt/marian-dev/build/marian}

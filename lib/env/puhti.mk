@@ -8,14 +8,14 @@ DATA_PREPARE_HPCPARAMS = CPUJOB_HPC_CORES=2 CPUJOB_HPC_MEM=16g CPUJOB_HPC_DISK=3
 DATA_ALIGN_HPCPARAMS = CPUJOB_HPC_CORES=4 CPUJOB_HPC_JOBS=2 CPUJOB_HPC_MEM=64g CPUJOB_HPC_DISK=3000
 
 TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
-			GPUJOB_HPC_CORES=4 \
+			GPUJOB_HPC_CORES=8 \
 			NR_GPUS=4 \
 			MARIAN_GPUS='0 1 2 3' \
 			MARIAN_DECODER_WORKSPACE=20000 \
 			HPC_TIME=72:00
 
 TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
-			GPUJOB_HPC_CORES=4 \
+			GPUJOB_HPC_CORES=8 \
 			NR_GPUS=1 \
 			MARIAN_GPUS='0' \
 			MARIAN_DECODER_WORKSPACE=20000 \
@@ -97,9 +97,6 @@ ifneq (${wildcard /projappl/project_2001194/bin},)
   export PATH := ${APPLHOME}/bin:${PATH}
 endif
 
-MARIAN_HOME = ${REPOHOME}tools/browsermt/marian-dev/build/
-MARIAN      = ${REPOHOME}tools/browsermt/marian-dev/build/
-
 # set LOCAL_SCRATCH to nvme disk if it exists
 ifdef SLURM_JOBID
 ifneq ($(wildcard /run/nvme/job_${SLURM_JOBID}/tmp),)
@@ -154,10 +151,7 @@ LOAD_BUILD_ENV = module load ${BUILD_MODULES} && module list
 
 MARIAN_BUILD_MODULES  = StdEnv perl python-data cuda intel-oneapi-mkl openmpi cmake
 LOAD_MARIAN_BUILD_ENV = module load ${MARIAN_BUILD_MODULES} && module list
-MARIAN_BUILD_OPTIONS  =	-DTcmalloc_INCLUDE_DIR=/appl/spack/install-tree/gcc-8.3.0/gperftools-2.7-5w7w2c/include \
-			-DTcmalloc_LIBRARY=/appl/spack/install-tree/gcc-8.3.0/gperftools-2.7-5w7w2c/lib/libtcmalloc.so \
-			-DTCMALLOC_LIB=/appl/spack/install-tree/gcc-8.3.0/gperftools-2.7-5w7w2c/lib/libtcmalloc.so \
-			-DCUDNN=ON \
+MARIAN_BUILD_OPTIONS  =	-DCUDNN=ON \
 			-DCOMPILE_CPU=ON \
 			-DCOMPILE_CUDA=ON \
 			-DCOMPILE_CUDA_SM35=OFF \
@@ -165,9 +159,12 @@ MARIAN_BUILD_OPTIONS  =	-DTcmalloc_INCLUDE_DIR=/appl/spack/install-tree/gcc-8.3.
 			-DCOMPILE_CUDA_SM60=OFF \
 			-DCOMPILE_CUDA_SM70=ON \
 			-DCOMPILE_CUDA_SM75=OFF \
-			-DUSE_DOXYGEN=OFF \
-			-DUSE_FBGEMM=1 \
-			-DFBGEMM_STATIC=1
+			-DUSE_DOXYGEN=OFF
+#			-DUSE_FBGEMM=1 \
+#			-DFBGEMM_STATIC=1
 
+#			-DTcmalloc_INCLUDE_DIR=/appl/spack/install-tree/gcc-8.3.0/gperftools-2.7-5w7w2c/include \
+#			-DTcmalloc_LIBRARY=/appl/spack/install-tree/gcc-8.3.0/gperftools-2.7-5w7w2c/lib/libtcmalloc.so \
+#			-DTCMALLOC_LIB=/appl/spack/install-tree/gcc-8.3.0/gperftools-2.7-5w7w2c/lib/libtcmalloc.so
 
 LOAD_COMET_ENV = module load pytorch &&
