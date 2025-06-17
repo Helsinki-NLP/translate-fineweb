@@ -74,7 +74,8 @@ CT2_JOB_TYPE := submitcpu
 
 
 
-CSCPROJECT   = project_2002688
+CSCPROJECT   = project_2005815
+# CSCPROJECT   = project_2002688
 # CSCPROJECT   = project_2002982
 # CSCPROJECT    = project_2005625
 WORKHOME     = ${shell realpath ${PWD}/work}

@@ -328,11 +328,12 @@ endif
 ## decoder flags (CPU and GPU variants)
 
 MARIAN_BEAM_SIZE = 4
-MARIAN_MINI_BATCH = 128
+MARIAN_MINI_BATCH = 64
+# MARIAN_MINI_BATCH = 128
 # MARIAN_MINI_BATCH = 768
 # MARIAN_MINI_BATCH = 1024
 # MARIAN_MINI_BATCH = 2048
-MARIAN_MAXI_BATCH = 5
+MARIAN_MAXI_BATCH = 16
 
 
 ## TODO: do we need to reduce workspace for decoding?

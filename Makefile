@@ -162,6 +162,25 @@ print-modelinfo:
 	@echo "target language label: ${TARGET_LANG_LABEL}"
 
 
+%-show-translations:
+	@paste -d "\n" \
+		<(gzip -cd $(word $(@:-show-translations=),${FINEWEB_INPUT})) \
+		<(gzip -cd $(word $(@:-show-translations=),${FINEWEB_TRANS})) \
+	| perl -pe 'if (/▁/){s/ //g;s/▁/ /g;s/^ *//;s/ *$$//;}' \
+	| sed 'n;G' | sed 's/>>...<< //' \
+	| perl ${PWD}/convert_hexcodes.pl
+
+%-check-length:
+	@( i=`gzip -cd $(word $(@:-check-length=),${FINEWEB_INPUT}) | wc -l`; \
+	   t=`gzip -cd $(word $(@:-check-length=),${FINEWEB_TRANS}) | wc -l`; \
+	   if [ $$i -eq $$t ]; then \
+	     echo "$(word $(@:-check-length=),${FINEWEB_TRANS}) is complete"; \
+	   else \
+	     echo "$$i != $$t $(word $(@:-check-length=),${FINEWEB_TRANS}) is incomplete"; \
+	   fi )
+
+# FINEWEB_INPUT
+
 
 ## translation targets (using marian-decoder)
 
@@ -172,6 +191,12 @@ FINEWEB_TRANS      := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_DIR}/%,${F
 FINEWEB_INPUT_JOBS := $(addsuffix -job,${FINEWEB_INPUT})
 FINEWEB_TRANS_JOBS := $(addsuffix -job,${FINEWEB_TRANS})
 
+
+## release data (which is parallel and completely translated
+
+FINEWEB_TRANS_RELEASE_DIR  := fineweb-edu/350BT/translated/${LANGPAIR}/${MODELNAME}
+FINEWEB_TRANS_RELEASE_SRC  := $(patsubst ${FINEWEB_TRANS_DIR}/%.input.gz,${FINEWEB_TRANS_RELEASE_DIR}/%.${SRC}.gz,${FINEWEB_INPUT})
+FINEWEB_TRANS_RELEASE_TRG  := $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz,${FINEWEB_TRANS})
 
 
 ## translation targets for quantized models
@@ -192,6 +217,7 @@ FINEWEB_CT2_JOBS := $(addsuffix -ct2-job,${FINEWEB_CT2})
 ## in case the job times out
 
 .PRECIOUS: ${FINEWEB_TRANS} ${FINEWEB_INT8} ${FINEWEB_CT2}
+
 
 ## auxiliary targets to submit SLURM jobs for translating each data shard
 
@@ -214,6 +240,14 @@ translate-int8-jobs: ${FINEWEB_INT8_JOBS}
 ${FINEWEB_INT8_JOBS}:
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(@:-job=).${TRANSLATE_JOB_TYPE}
 
+
+## high-level targets for creating parallel release data
+## (this checks for completeness by counting the number of lines for input/output)
+
+release-data: ${FINEWEB_TRANS_RELEASE_TRG} ${FINEWEB_TRANS_RELEASE_SRC}
+
+release-first:  $(firstword ${FINEWEB_TRANS_RELEASE_SRC}) \
+		$(firstword ${FINEWEB_TRANS_RELEASE_TRG})
 
 
 
@@ -398,9 +432,14 @@ endif
 
 
 ## OPUS-MT models require post-processing (merging subword-tokens)
+## some special treatment for nno (replace hexadecimal codes)
 
 ifneq (${MODELTYPE},HPLT-MT-models)
+ifeq (${TRG},nno)
+  POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | perl convert_hexcodes.pl |
+else
   POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' |
+endif
 endif
 
 
@@ -434,6 +473,33 @@ ifeq (${MODELTYPE},HPLT-MT-models)
 else
 	python segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
 endif
+
+
+## release data
+## check length (compare number of lines in input and output)
+
+
+${FINEWEB_TRANS_RELEASE_TRG}: ${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz: ${FINEWEB_TRANS_DIR}/%.txt.gz
+	@(echo "check output length for $<"; \
+	  i=`gzip -cd $(<:.txt.gz=.input.gz) | wc -l`; \
+	  t=`gzip -cd $< | wc -l`; \
+	  if [ $$i -eq $$t ]; then \
+	    echo "- translations are complete"; \
+	    mkdir -p $(dir $@); \
+	    echo "- copying/post-processing the input data"; \
+	    gzip -cd < $(<:.txt.gz=.input.gz) \
+	    | ${POST_PROCESS} sed 's/>>.*<< //' \
+	    | gzip -c > $(@:.${TRG}.gz=.${SRC}.gz); \
+	    echo "- copying the translated data"; \
+	    mv $< $@; \
+	    cd $(dir $@); \
+	    ln -s ${PWD}/$@ ${PWD}/$<;\
+	  else \
+	    echo "translations are incomplete ($$i != $$t)"; \
+	  fi )
+
+${FINEWEB_TRANS_RELEASE_SRC}: %.${SRC}.gz: %.${TRG}.gz
+	if [ -e $@ ]; then touch $@; fi
 
 
 
