@@ -610,6 +610,7 @@ ${FINEWEB_TRANS_RELEASE_SRC}: %.${SRC}.gz: %.${TRG}.gz
 
 JOBINFO_FILES = $(addsuffix .info,$(filter-out %.info,$(wildcard ${FINEWEB_TRANS_DIR}/*.out.*)))
 
+.PHONY: jobinfo
 jobinfo: ${JOBINFO_FILES}
 	git add ${FINEWEB_TRANS_DIR}/*.submit
 	git add ${FINEWEB_TRANS_DIR}/*.out.*
