@@ -63,7 +63,8 @@ all: translate
 .PHONY: upload
 upload:
 	swift upload OELLM-synthetic --use-slo --segment-size 5G fineweb-edu/350BT/translated/${LANGPAIR}
-	swift list OELLM-synthetic | sed 's#^#* https://object.pouta.csc.fi/OELLM-synthetic/#' > allas-links.md
+	swift list OELLM-synthetic --prefix fineweb-edu/350BT/translated/${LANGPAIR}/ \
+	| sed 's#^#* https://object.pouta.csc.fi/OELLM-synthetic/#' > fineweb-edu-${LANGPAIR}.md
 
 ##---------------------------------------------------------------
 ## submit SLURM jobs
