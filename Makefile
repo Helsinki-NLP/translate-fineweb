@@ -378,14 +378,14 @@ ${FINEWEB_CT2_JOBS}:
 #
 # ${FINEWEB_TXT}: ${FINEWEB_TXT_DIR}/%.txt.gz: ${FINEWEB_DIR}/%.jsonl.gz
 # 	mkdir -p $(dir $@)
-# 	python jsonl_to_text.py -i $< -l en | gzip -c > $@
+# 	python scripts/jsonl_to_text.py -i $< -l en | gzip -c > $@
 
 
 ## (b) without dependency
 
 ${FINEWEB_TXT}:
 	mkdir -p $(dir $@)
-	python jsonl_to_text.py -l en \
+	python scripts/jsonl_to_text.py -l en \
 		-i $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$@) \
 	| gzip -c > $@
 
@@ -443,9 +443,9 @@ ${FINEWEB_TRANS_DIR}/%.input.gz: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
 #	cd $(dir $@) && ln -s $(PWD)/$< $(notdir $@)
-	python segment.py -i $< | gzip -c > $@
+	python scripts/segment.py -i $< | gzip -c > $@
 else
-	python segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
+	python scripts/segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
 endif
 
 
@@ -455,7 +455,7 @@ endif
 
 ifneq (${MODELTYPE},HPLT-MT-models)
 ifeq (${TRG},nno)
-  POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | perl convert_hexcodes.pl |
+  POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | perl scripts/convert_hexcodes.pl |
 else
   POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' |
 endif
@@ -530,9 +530,9 @@ endif
 ${TMPDIR}/${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
-	python segment.py -i $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
+	python scripts/segment.py -i $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
 else
-	python segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
+	python scripts/segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
 endif
 
 
@@ -551,7 +551,7 @@ ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
 	${MAKE} prepare-model
 	${MAKE} convert-model
 	mkdir -p ${TMPDIR}/$(dir $@)
-	${LOAD_CT2_ENV} python3 translate_file.py \
+	${LOAD_CT2_ENV} python3 scripts/translate_file.py \
 		-i $< \
 		-o ${TMPDIR}/${@:.gz=} \
 		-m ${MODEL_CT2_DIR} \
@@ -615,7 +615,7 @@ ${FINEWEB_TRANS_RELEASE_SRC}: %.${SRC}.gz: %.${TRG}.gz
 		<(gzip -cd $(word $(@:-show-translations=),${FINEWEB_TRANS})) \
 	| perl -pe 'if (/▁/){s/ //g;s/▁/ /g;s/^ *//;s/ *$$//;}' \
 	| sed 'n;G' | sed 's/>>...<< //' \
-	| perl ${PWD}/convert_hexcodes.pl
+	| perl ${PWD}/scripts/convert_hexcodes.pl
 
 
 ##---------------------------------------
