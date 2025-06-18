@@ -71,6 +71,7 @@ upload:
 	mv README.new README.md
 
 
+
 ##---------------------------------------------------------------
 ## submit SLURM jobs
 ##
@@ -602,6 +603,21 @@ ${FINEWEB_TRANS_RELEASE_SRC}: %.${SRC}.gz: %.${TRG}.gz
 	if [ -e $@ ]; then touch $@; fi
 
 
+
+##---------------------------------------
+## create files with job stats
+##---------------------------------------
+
+JOBINFO_FILES = $(addsuffix .info,$(filter-out %.info,$(wildcard ${FINEWEB_TRANS_DIR}/*.out.*)))
+
+jobinfo: ${JOBINFO_FILES}
+	git add ${FINEWEB_TRANS_DIR}/*.submit
+	git add ${FINEWEB_TRANS_DIR}/*.out.*
+	git add ${FINEWEB_TRANS_DIR}/*.err.*
+	git commit -am 'logfiles added for ${FINEWEB_TRANS_DIR}'
+
+${JOBINFO_FILES}: %.info: %
+	seff $(lastword $(subst ., ,$<)) > $@
 
 
 ##---------------------------------------
