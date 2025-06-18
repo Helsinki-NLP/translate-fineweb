@@ -96,6 +96,25 @@ translate-job-%:
 
 
 
+## find incomplete translation files
+## and create input file for translating them
+
+.PHONY: find-missing-translations
+find-missing-translations:
+	${MAKE} $(patsubst %,%-check-length,$(shell seq $(words ${FINEWEB_TRANS})))
+
+## translate missing translation lines and merge with existing ones
+
+.PHONY: translate-missing-jobs
+translate-missing-jobs:
+	for t in ${FINEWEB_MISSING_TRANS}; do \
+	  if [ ! -e $$t ]; then \
+	    ${MAKE} ${TRANSLATE_JOB_OPTIONS} $$t.${TRANSLATE_JOB_TYPE}; \
+	  fi \
+	done
+
+
+
 ## translate with quantized model
 
 .PHONY: translate-int8-job
@@ -169,25 +188,6 @@ print-modelinfo:
 	@echo "target language label: ${TARGET_LANG_LABEL}"
 
 
-%-show-translations:
-	@paste -d "\n" \
-		<(gzip -cd $(word $(@:-show-translations=),${FINEWEB_INPUT})) \
-		<(gzip -cd $(word $(@:-show-translations=),${FINEWEB_TRANS})) \
-	| perl -pe 'if (/▁/){s/ //g;s/▁/ /g;s/^ *//;s/ *$$//;}' \
-	| sed 'n;G' | sed 's/>>...<< //' \
-	| perl ${PWD}/convert_hexcodes.pl
-
-%-check-length:
-	@( i=`gzip -cd $(word $(@:-check-length=),${FINEWEB_INPUT}) | wc -l`; \
-	   t=`gzip -cd $(word $(@:-check-length=),${FINEWEB_TRANS}) | wc -l`; \
-	   if [ $$i -eq $$t ]; then \
-	     echo "$(word $(@:-check-length=),${FINEWEB_TRANS}) is complete"; \
-	   else \
-	     echo "$$i != $$t $(word $(@:-check-length=),${FINEWEB_TRANS}) is incomplete"; \
-	   fi )
-
-# FINEWEB_INPUT
-
 
 ## translation targets (using marian-decoder)
 
@@ -206,11 +206,17 @@ FINEWEB_TRANS_RELEASE_SRC  := $(patsubst ${FINEWEB_TRANS_DIR}/%.input.gz,${FINEW
 FINEWEB_TRANS_RELEASE_TRG  := $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz,${FINEWEB_TRANS})
 
 
+## in case of broken translation jobs: missing translations are created here
+
+FINEWEB_MISSING_DIR   := fineweb-edu/350BT/missing/${LANGPAIR}/${MODELNAME}
+FINEWEB_MISSING_INPUT := $(wildcard ${FINEWEB_MISSING_DIR}/*.input.gz)
+FINEWEB_MISSING_TRANS := $(patsubst %.input.gz,%.translated.gz,$(FINEWEB_MISSING_INPUT))
+
+
 ## translation targets for quantized models
 
 FINEWEB_INT8       := $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_TRANS_DIR}/%.int8.gz,${FINEWEB_TXT})
 FINEWEB_INT8_JOBS  := $(addsuffix -job,${FINEWEB_INT8})
-
 
 
 ## translation targets for ctranslate2
@@ -259,7 +265,7 @@ release-first:  $(firstword ${FINEWEB_TRANS_RELEASE_SRC}) \
 
 
 ## targets for fetching the translation model
-## and extract the data for translation
+## and extracting the data for translation
 
 .PHONY: prepare
 prepare: prepare-model # ${FINEWEB_TXT}
@@ -293,7 +299,9 @@ ${LANGPAIR}/${MODELNAME}/model.intgemm8.bin: ${LANGPAIR}/${MODELNAME}/decoder.ym
 		> ${LANGPAIR}/${MODELNAME}/decoder-int8.yml
 
 
-## targets for translating
+##---------------------------------------
+## targets for translating (with OPUS-MT)
+##---------------------------------------
 
 .PHONY: translate
 translate: ${FINEWEB_TRANS}
@@ -306,8 +314,19 @@ translate-first: $(firstword ${FINEWEB_TRANS})
 	${MAKE} $(word $(@:-translate=),${FINEWEB_TRANS})
 
 
+# translate missing lines
 
-## targets for translating
+.PHONY: translate-missing
+translate-missing: ${FINEWEB_MISSING_TRANS}
+
+.PHONY: %-translate-missing
+%-translate-missing:
+	${MAKE} $(word $(@:-translate-missing=),${FINEWEB_MISSING_TRANS})
+
+
+##---------------------------------------
+## targets for translating with quantized models
+##---------------------------------------
 
 .PHONY: translate-int8
 translate-int8: ${FINEWEB_INT8}
@@ -320,8 +339,9 @@ translate-int8-first: $(firstword ${FINEWEB_INT8})
 	${MAKE} $(word $(@:-translate-int8=),${FINEWEB_INT8})
 
 
-
+##---------------------------------------
 ## targets for translating with ctransate2
+##---------------------------------------
 
 .PHONY: convert-model
 convert-model: ct2/${LANGPAIR}/${MODELNAME}/model.bin
@@ -342,6 +362,10 @@ ${FINEWEB_CT2_JOBS}:
 
 
 
+##---------------------------------------
+## translate with Marian-NMT (and OPUS-MT)
+##---------------------------------------
+
 
 ## preparing a data file for translation
 ## (a) with dependency on the original jsonl file:
@@ -361,24 +385,6 @@ ${FINEWEB_TXT}:
 
 
 
-## convert to ctranslate2
-## TODO: does the conversion from spm to vocab.yml work correctly?
-
-ct2/${LANGPAIR}/${MODELNAME}/model.bin: ${LANGPAIR}/${MODELNAME}/decoder.yml
-ifneq (${MODELZIP},)
-	mkdir -p ct2/${LANGPAIR}
-ifeq (${MODELTYPE},HPLT-MT-models)
-	spm_export_vocab --model ${LANGPAIR}/${MODELNAME}/source.spm > ${LANGPAIR}/${MODELNAME}/vocab.txt
-	cut -f1 ${LANGPAIR}/${MODELNAME}/vocab.txt | scripts/vocab2yaml.py > ${LANGPAIR}/${MODELNAME}/vocab.yml
-	ct2-marian-converter \
-		--quantization int8 \
-		--model_path ${LANGPAIR}/${MODELNAME}/model.npz \
-		--vocab_paths ${LANGPAIR}/${MODELNAME}/vocab.yml ${LANGPAIR}/${MODELNAME}/vocab.yml \
-		--output_dir $(dir $@)
-else
-	ct2-opus-mt-converter --quantization int8 --model_dir $(dir $<) --output_dir $(dir $@)
-endif
-endif
 
 ## fetch the selected model
 
@@ -471,7 +477,49 @@ ${FINEWEB_INT8}: %.int8.gz: %.input.gz
 	${POST_PROCESS} gzip -c > ${PWD}/$@
 
 
+## translate missing lines (from incomplete jobs)
 
+${FINEWEB_MISSING_TRANS}: %.translated.gz: %.input.gz
+	${MAKE} prepare-model
+	${LOAD_ENV} && cd ${LANGPAIR}/${MODELNAME} && ${MARIAN_DECODER} \
+		-i ${PWD}/$< \
+		-c decoder.yml \
+		${MARIAN_DECODER_FLAGS} |\
+	${POST_PROCESS} gzip -c > ${PWD}/$@
+	zcat ${FINEWEB_TRANS_DIR}/$(notdir $(@:.translated.gz=.txt.gz)) | head -n -1 > $(@:.translated.gz=.txt)
+	zcat $@ >> $(@:.translated.gz=.txt)
+	gzip -f $(@:.translated.gz=.txt)
+	mv ${FINEWEB_TRANS_DIR}/$(notdir $(@:.translated.gz=.txt.gz)) $(@:.translated.gz=.incomplete.gz)
+	mv $(@:.translated.gz=.txt.gz) ${FINEWEB_TRANS_DIR}/
+
+
+
+##---------------------------------------
+## translate files with ctranslate2
+##---------------------------------------
+
+
+## convert to ctranslate2
+## TODO: does the conversion from spm to vocab.yml work correctly?
+
+ct2/${LANGPAIR}/${MODELNAME}/model.bin: ${LANGPAIR}/${MODELNAME}/decoder.yml
+ifneq (${MODELZIP},)
+	mkdir -p ct2/${LANGPAIR}
+ifeq (${MODELTYPE},HPLT-MT-models)
+	spm_export_vocab --model ${LANGPAIR}/${MODELNAME}/source.spm > ${LANGPAIR}/${MODELNAME}/vocab.txt
+	cut -f1 ${LANGPAIR}/${MODELNAME}/vocab.txt | scripts/vocab2yaml.py > ${LANGPAIR}/${MODELNAME}/vocab.yml
+	ct2-marian-converter \
+		--quantization int8 \
+		--model_path ${LANGPAIR}/${MODELNAME}/model.npz \
+		--vocab_paths ${LANGPAIR}/${MODELNAME}/vocab.yml ${LANGPAIR}/${MODELNAME}/vocab.yml \
+		--output_dir $(dir $@)
+else
+	ct2-opus-mt-converter --quantization int8 --model_dir $(dir $<) --output_dir $(dir $@)
+endif
+endif
+
+
+## tokenize source language (input files)
 
 ${TMPDIR}/${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
@@ -482,40 +530,11 @@ else
 endif
 
 
-## release data
-## check length (compare number of lines in input and output)
-
-
-${FINEWEB_TRANS_RELEASE_TRG}: ${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz: ${FINEWEB_TRANS_DIR}/%.txt.gz
-	@(echo "check output length for $<"; \
-	  i=`gzip -cd $(<:.txt.gz=.input.gz) | wc -l`; \
-	  t=`gzip -cd $< | wc -l`; \
-	  if [ $$i -eq $$t ]; then \
-	    echo "- translations are complete"; \
-	    mkdir -p $(dir $@); \
-	    echo "- copying/post-processing the input data"; \
-	    gzip -cd < $(<:.txt.gz=.input.gz) \
-	    | ${POST_PROCESS} sed 's/>>.*<< //' \
-	    | gzip -c > $(@:.${TRG}.gz=.${SRC}.gz); \
-	    echo "- copying the translated data"; \
-	    mv $< $@; \
-	    cd $(dir $@); \
-	    ln -s ${PWD}/$@ ${PWD}/$<;\
-	  else \
-	    echo "translations are incomplete ($$i != $$t)"; \
-	  fi )
-
-${FINEWEB_TRANS_RELEASE_SRC}: %.${SRC}.gz: %.${TRG}.gz
-	if [ -e $@ ]; then touch $@; fi
-
-
-
-
+## translate
 
 MODEL_CT2_DIR := ct2/${LANGPAIR}/${MODELNAME}
 MODEL_SRC_SPM := ${LANGPAIR}/${MODELNAME}/source.spm
 
-# TMPDIR
 
 CT2_WORKERS    ?= 4
 CT2_DEVICE     ?= cpu
@@ -538,3 +557,81 @@ ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
 	mkdir -p $(dir $@)
 	cat ${TMPDIR}/${@:.gz=} | sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | gzip -c > $@
 	rm -f ${TMPDIR}/${@:.gz=}
+
+
+
+##---------------------------------------
+## create release-data
+## - check length (compare number of lines in input and output)
+## - post-process input files to create regular text files
+## - move the translated file and create a symbolic link to the original location
+##
+## This will skip the file if the translation is incomplete (different number of lines)
+## TODO: do we need to create a source language file for each language pair?
+##---------------------------------------
+
+${FINEWEB_TRANS_RELEASE_TRG}: ${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz: ${FINEWEB_TRANS_DIR}/%.txt.gz
+	@(echo "check output length for $<"; \
+	  i=`gzip -cd $(<:.txt.gz=.input.gz) | wc -l`; \
+	  t=`gzip -cd $< | wc -l`; \
+	  if [ $$i -eq $$t ]; then \
+	    echo "- translations are complete"; \
+	    mkdir -p $(dir $@); \
+	    echo "- copying/post-processing the input data"; \
+	    gzip -cd < $(<:.txt.gz=.input.gz) \
+	    | ${POST_PROCESS} sed 's/>>.*<< //' \
+	    | gzip -c > $(@:.${TRG}.gz=.${SRC}.gz); \
+	    echo "- copying the translated data"; \
+	    mv $< $@; \
+	    cd $(dir $@); \
+	    ln -s ${PWD}/$@ ${PWD}/$<;\
+	  else \
+	    echo "translations are incomplete ($$i != $$t)"; \
+	  fi )
+
+
+## dummy target for the source language file to satisfy some make targets
+
+${FINEWEB_TRANS_RELEASE_SRC}: %.${SRC}.gz: %.${TRG}.gz
+	if [ -e $@ ]; then touch $@; fi
+
+
+
+
+##---------------------------------------
+## show translations for a certain shard number
+## together with the original input
+##---------------------------------------
+
+%-show-translations:
+	@paste -d "\n" \
+		<(gzip -cd $(word $(@:-show-translations=),${FINEWEB_INPUT})) \
+		<(gzip -cd $(word $(@:-show-translations=),${FINEWEB_TRANS})) \
+	| perl -pe 'if (/▁/){s/ //g;s/▁/ /g;s/^ *//;s/ *$$//;}' \
+	| sed 'n;G' | sed 's/>>...<< //' \
+	| perl ${PWD}/convert_hexcodes.pl
+
+
+##---------------------------------------
+## count the number of lines in input and translations
+## in order to find incomplete translations
+## --> move input for those missing lines (+1 extra line)
+##     to prepare for translation jobs for those missing lines
+##---------------------------------------
+
+%-check-length:
+	@( I=$(word $(@:-check-length=),${FINEWEB_INPUT}); \
+	   T=$(word $(@:-check-length=),${FINEWEB_TRANS}); \
+	   i=`gzip -cd $$I | wc -l`; \
+	   t=`gzip -cd $$T | wc -l`; \
+	   if [ $$i -eq $$t ]; then \
+	     echo "$$T is complete"; \
+	   else \
+	     echo "$$T is incomplete"; \
+	     echo "$$i $$I"; \
+	     echo "$$t $$T"; \
+	     echo "missing: $$(( $$i-$$t ))"; \
+	     mkdir -p ${FINEWEB_MISSING_DIR}; \
+	     M=$(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_MISSING_DIR}/%,$(word $(@:-check-length=),${FINEWEB_INPUT})); \
+	     zcat $$I | tail -n $$(( $$i-$$t+1 )) | gzip -c > $$M; \
+	   fi )
