@@ -65,6 +65,11 @@ upload:
 	swift upload OELLM-synthetic --use-slo --segment-size 5G fineweb-edu/350BT/translated/${LANGPAIR}
 	swift list OELLM-synthetic --prefix fineweb-edu/350BT/translated/${LANGPAIR}/ \
 	| sed 's#^#* https://object.pouta.csc.fi/OELLM-synthetic/#' > fineweb-edu-${LANGPAIR}.md
+	grep -v 'fineweb-edu-${LANGPAIR}.md' README.md        > README.new
+	echo '* * [${LANGPAIR}](fineweb-edu-${LANGPAIR}.md)' >> README.new
+	mv README.md README.$(shell date +%F)
+	mv README.new README.md
+
 
 ##---------------------------------------------------------------
 ## submit SLURM jobs
