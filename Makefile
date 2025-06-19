@@ -592,7 +592,7 @@ ${FINEWEB_TRANS_RELEASE_TRG}: ${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz: ${FINEWE
 	    mv $< $@; \
 	    cd $(dir $@); \
 	    ln -s ${PWD}/$@ ${PWD}/$<;\
-	    touch $@; \
+	    touch ${PWD}/$@; \
 	  else \
 	    echo "translations are incomplete ($$i != $$t)"; \
 	  fi )
