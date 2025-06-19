@@ -78,6 +78,7 @@ ifeq (${HPC_HOST},lumi)
 	echo 'CPU_BIND="$${CPU_BIND},fe0000,fe000000"' >> $@
 	echo 'CPU_BIND="$${CPU_BIND},fe,fe00"' >> $@
 	echo 'CPU_BIND="$${CPU_BIND},fe00000000,fe0000000000"' >> $@
+	echo '/appl/local/csc/soft/ai/bin/gpu-energy --save' >> $@
 #	echo 'gpu-energy --save' >> $@
 	echo 'srun --cpu-bind=$${CPU_BIND} ${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
 # else
@@ -89,6 +90,7 @@ else
 endif
 ifeq (${HPC_HOST},lumi)
 #	echo 'gpu-energy --diff' >> $@
+	echo '/appl/local/csc/soft/ai/bin/gpu-energy --diff' >> $@
 endif
 	echo 'echo "Finishing at `date`"' >> $@
 	sbatch --account=${GPU_PROJECT} ${SBATCH_ARGS} $@

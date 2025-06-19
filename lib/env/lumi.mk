@@ -13,12 +13,14 @@ GPUJOB_HPC_CORES = 56
 GPUJOB_HPC_MEM   = 32g
 
 
-# TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=4 MARIAN_GPUS='0 1 2 3' HPC_TIME=24:00
-TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
-			GPUJOB_HPC_CORES=8 \
-			NR_GPUS=8 \
-			MARIAN_GPUS='0 1 2 3 4 5 6 7' \
-			HPC_TIME=24:00
+# TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=4 MARIAN_GPUS='0 1 2 3' HPC_TIME=30 HPC_GPUQUEUE=dev-g
+TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=4 MARIAN_GPUS='0 1 2 3' HPC_TIME=72:00 HPC_GPUQUEUE=small-g
+# TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g \
+# 			GPUJOB_HPC_CORES=8 \
+# 			NR_GPUS=8 \
+# 			MARIAN_GPUS='0 1 2 3 4 5 6 7' \
+# 			HPC_TIME=24:00
+
 
 TRANSLATE_JOB_TYPE := submit
 
@@ -51,7 +53,7 @@ endif
 
 
 ## select queue depending on the number of GPUs allocated
-HPC_GPUQUEUE  = small-g
+HPC_GPUQUEUE ?= small-g
 
 # ifeq (${NR_GPUS},1)
 #  HPC_GPUQUEUE  = small-g
@@ -67,8 +69,8 @@ EXTRA_MODULES_DIR = /projappl/project_462000067/public/gnail/software/modules
 
 CPU_MODULES   = cray-python parallel expat Perl wget
 GPU_MODULES   = cray-python parallel expat Perl wget
-LOAD_CPU_ENV  = module load ${CPU_MODULES}
-LOAD_GPU_ENV  = module load ${GPU_MODULES}
+LOAD_CPU_ENV  = module -q load ${CPU_MODULES}
+LOAD_GPU_ENV  = module -q load ${GPU_MODULES}
 # LOAD_CPU_ENV  = module load LUMI/23.03 && module load ${CPU_MODULES}
 # LOAD_GPU_ENV  = module load LUMI/23.03 && module load ${GPU_MODULES}
 
