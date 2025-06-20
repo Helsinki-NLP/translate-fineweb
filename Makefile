@@ -116,7 +116,7 @@ find-missing-translations:
 translate-missing-jobs:
 	for t in ${FINEWEB_MISSING_TRANS}; do \
 	  if [ ! -e $$t ]; then \
-	    ${MAKE} ${TRANSLATE_JOB_OPTIONS} $$t.${TRANSLATE_JOB_TYPE}; \
+	    ${MAKE} MARIAN_MINI_BATCH=32 ${TRANSLATE_JOB_OPTIONS} $$t.${TRANSLATE_JOB_TYPE}; \
 	  fi \
 	done
 
@@ -328,7 +328,7 @@ translate-missing: ${FINEWEB_MISSING_TRANS}
 
 .PHONY: %-translate-missing
 %-translate-missing:
-	${MAKE} $(word $(@:-translate-missing=),${FINEWEB_MISSING_TRANS})
+	${MAKE} MARIAN_MINI_BATCH=32 $(word $(@:-translate-missing=),${FINEWEB_MISSING_TRANS})
 
 
 ##---------------------------------------
@@ -594,12 +594,13 @@ ${FINEWEB_TRANS_RELEASE_TRG}: ${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz: ${FINEWE
 	    | gzip -c > $(@:.${TRG}.gz=.${SRC}.gz); \
 	    echo "- copying the translated data"; \
 	    mv $< $@; \
-	    cd $(dir $@); \
-	    ln -s ${PWD}/$@ ${PWD}/$<;\
 	    if [ ${TRG} == 'cat' ]; then \
-	       gzip -cd ${PWD}/$@ | perl scripts/convert_hexcodes.pl | gzip -c > $@.tmp.gz; \
+	       gzip -cd $@ | perl scripts/convert_hexcodes.pl | gzip -c > $@.tmp.gz; \
 	       mv -f $@.tmp.gz $@; \
 	    fi; \
+	    cd $(dir $@); \
+	    ln -s ${PWD}/$@ ${PWD}/$<;\
+	    touch ${PWD}/$@; \
 	  else \
 	    echo "translations are incomplete ($$i != $$t)"; \
 	  fi )
