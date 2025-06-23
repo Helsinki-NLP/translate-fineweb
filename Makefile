@@ -459,12 +459,16 @@ endif
 ## some special treatment for nno (replace hexadecimal codes)
 
 ifneq (${MODELTYPE},HPLT-MT-models)
-ifeq (${TRG},nno)
-  POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | perl scripts/convert_hexcodes.pl |
-else
-  POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' |
+  POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | perl ${PWD}/scripts/convert_hexcodes.pl |
 endif
-endif
+
+# ifneq (${MODELTYPE},HPLT-MT-models)
+# ifeq (${TRG},nno)
+#   POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | perl ${PWD}/scripts/convert_hexcodes.pl |
+# else
+#   POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' |
+# endif
+# endif
 
 
 ## finally: target for translating a file
@@ -594,6 +598,10 @@ ${FINEWEB_TRANS_RELEASE_TRG}: ${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz: ${FINEWE
 	    | gzip -c > $(@:.${TRG}.gz=.${SRC}.gz); \
 	    echo "- copying the translated data"; \
 	    mv $< $@; \
+	    if [ ${TRG} == 'cat' ]; then \
+	       gzip -cd $@ | perl scripts/convert_hexcodes.pl | gzip -c > $@.tmp.gz; \
+	       mv -f $@.tmp.gz $@; \
+	    fi; \
 	    cd $(dir $@); \
 	    ln -s ${PWD}/$@ ${PWD}/$<;\
 	    touch ${PWD}/$@; \
