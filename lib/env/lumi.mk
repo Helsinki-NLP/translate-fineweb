@@ -25,9 +25,24 @@ TRANSLATE_JOB_OPTIONS := GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=4 MARIAN_
 TRANSLATE_JOB_TYPE := submit
 
 
-CSCPROJECT    = project_462000688
-GPU_PROJECT   = project_462000688
+
+
+## HPLT-bitexting
+# CSCPROJECT    = project_462000688
+# GPU_PROJECT   = project_462000688
+# CPU_PROJECT   = project_462000688
+
+## HPLT-bitexting-2
+CSCPROJECT    = project_462000764
+GPU_PROJECT   = project_462000764
 CPU_PROJECT   = project_462000764
+
+## MaMuLaM
+# CSCROJECT     = project_462000964
+# GPU_PROJECT   = project_462000964
+# CPU_PROJECT   = project_462000964
+
+
 HPC_QUEUE     = small
 GPU           = a100
 WALLTIME      = 72
@@ -69,6 +84,8 @@ EXTRA_MODULES_DIR = /projappl/project_462000067/public/gnail/software/modules
 
 CPU_MODULES   = cray-python parallel expat Perl wget
 GPU_MODULES   = cray-python parallel expat Perl wget
+# GPU_MODULES   = PrgEnv-cray/8.3.3 craype-accel-amd-gfx90a cray-python rocm/5.2.3 parallel expat Perl wget
+
 LOAD_CPU_ENV  = module -q load ${CPU_MODULES}
 LOAD_GPU_ENV  = module -q load ${GPU_MODULES}
 # LOAD_CPU_ENV  = module load LUMI/23.03 && module load ${CPU_MODULES}
@@ -82,6 +99,9 @@ LOAD_GPU_ENV  = module -q load ${GPU_MODULES}
 # MARIAN_HOME := /projappl/project_462000067/public/gnail/software/marian-320dd390/bin/
 # MARIAN := ${MARIAN_HOME}marian
 
+
+# MARIAN_HOME := /appl/local/csc/soft/ai/opt/MarianNMT-2024-09/bin/
+# MARIAN      := ${MARIAN_HOME}marian
 
 HPC_GPU_ALLOCATION = --gpus-per-node=${NR_GPUS}
 HPC_GPU_EXTRA1 = \#SBATCH --cpus-per-task 56

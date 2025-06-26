@@ -1,6 +1,7 @@
 datatrove
 pyarrow
 mosestokenizer
+toolwrapper>=0.4.1
 loomchild-segment
 ctranslate2
 sentencepiece

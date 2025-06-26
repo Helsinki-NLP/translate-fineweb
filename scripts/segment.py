@@ -50,8 +50,13 @@ with gzip.open(args.input_file,'rt') as i:
         for s in segments:
             s = s.strip()
             if len(s) > max_length:
+                ## TODO: this is not a very good way of splitting in punctuation characters
+                ## (seems to delete characters after puncutations that are not spaces)
                 # p=re.findall('[^\s][^.?,;:]+.?', s)
-                p=re.findall('[^\s][^'+ string.punctuation +']+.?', s)
+                # p=re.findall('[^\s][^'+ string.punctuation +']+.?', s)
+                ## is this better?
+                
+                p=re.findall('[^\s]+[^'+ string.punctuation +']+.?', s)
                 print("\n".join(p))
             else:
                 print(s)

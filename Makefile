@@ -43,6 +43,19 @@ FINEWEB_TXT     := $(sort \
 			$(wildcard ${FINEWEB_TXT_DIR}/*.txt.gz))
 
 
+# ## new version of text extraction
+
+# FINEWEB_TEXT     := $(sort \
+# 			$(patsubst %.jsonl.gz,${FINEWEB_TEXT_DIR}/%.txt.gz,${FINEWEB_JSONL}) \
+# 			$(wildcard ${FINEWEB_TEXT_DIR}/*.txt.gz))
+
+
+FINEWEB_TEXT_DIR := fineweb-edu/350BT/txt
+
+.PHONY: %_newtext
+%_newtext:
+	${MAKE} FINEWEB_TXT_DIR=${FINEWEB_TEXT_DIR} $(@:_newtext=)
+
 ##---------------------------------------------------------------
 ## top-level targets
 ##
@@ -66,7 +79,7 @@ upload:
 	swift list OELLM-synthetic --prefix fineweb-edu/350BT/translated/${LANGPAIR}/ \
 	| sed 's#^#* https://object.pouta.csc.fi/OELLM-synthetic/#' > fineweb-edu-${LANGPAIR}.md
 	grep -v 'fineweb-edu-${LANGPAIR}.md' README.md        > README.new
-	echo '* * [${LANGPAIR}](fineweb-edu-${LANGPAIR}.md)' >> README.new
+	echo '* [${LANGPAIR}](fineweb-edu-${LANGPAIR}.md)' >> README.new
 	mv README.md README.$(shell date +%F)
 	mv README.new README.md
 
@@ -85,9 +98,6 @@ upload:
 prepare-job: prepare-model 
 	${MAKE} HPC_MEM=64g HPC_CORES=32 prepare.submitcpu
 
-.PHONY: prepare-jobs
-prepare-jobs: ${FINEWEB_INPUT_JOBS}
-
 prepare-job-%:
 	${MAKE} HPC_CORES=1 HPC_MEM=4g HPC_TIME=2:00 \
 		$(patsubst prepare-job-%,%-prepare,$@).submitcpu
@@ -100,6 +110,25 @@ translate-job: prepare-first
 .PHONY: translate-job-%
 translate-job-%:
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(patsubst translate-job-%,%-translate,$@).${TRANSLATE_JOB_TYPE}
+
+translate-jobtest:
+	${MAKE} GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=4 NR_GPUS=1 HPC_TIME=30 HPC_GPUQUEUE=dev-g translate-first.${TRANSLATE_JOB_TYPE}
+
+translate-jobtest2:
+	${MAKE} MARIAN_BEAM_SIZE=1 MARIAN_MINI_BATCH=16 MARIAN_MAXI_BATCH=2 GPUJOB_HPC_MEM=128g GPUJOB_HPC_CORES=8 NR_GPUS=2 MARIAN_GPUS='0 1' HPC_TIME=30 HPC_GPUQUEUE=dev-g translate-first.${TRANSLATE_JOB_TYPE}
+
+translate-jobtest4:
+	${MAKE} MARIAN_BEAM_SIZE=1 MARIAN_MINI_BATCH=16 MARIAN_MAXI_BATCH=2 GPUJOB_HPC_MEM=128g GPUJOB_HPC_CORES=8 NR_GPUS=4 MARIAN_GPUS='0 1 2 3' HPC_TIME=30 HPC_GPUQUEUE=dev-g translate-first.${TRANSLATE_JOB_TYPE}
+
+
+
+
+
+translate-jobtestcpu:
+	${MAKE} GPUJOB_HPC_MEM=128g GPUJOB_HPC_CORES=4 HPC_TIME=30 HPC_GPUQUEUE=dev translate-first.submitcpu
+
+
+
 
 
 
@@ -211,7 +240,7 @@ FINEWEB_TRANS_JOBS := $(addsuffix -job,${FINEWEB_TRANS})
 FINEWEB_TRANS_RELEASE_DIR  := fineweb-edu/350BT/translated/${LANGPAIR}/${MODELNAME}
 FINEWEB_TRANS_RELEASE_SRC  := $(patsubst ${FINEWEB_TRANS_DIR}/%.input.gz,${FINEWEB_TRANS_RELEASE_DIR}/%.${SRC}.gz,${FINEWEB_INPUT})
 FINEWEB_TRANS_RELEASE_TRG  := $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz,${FINEWEB_TRANS})
-
+FINEWEB_TRANS_RELEASE_ORG  := $(patsubst ${FINEWEB_TRANS_DIR}/%.input.gz,${FINEWEB_TRANS_RELEASE_DIR}/%.${SRC}.gz,${FINEWEB_INPUT})
 
 ## in case of broken translation jobs: missing translations are created here
 
@@ -287,11 +316,17 @@ prepare-first: prepare-model # $(firstword ${FINEWEB_TXT})
 	${MAKE} $(word $(@:-prepare=),${FINEWEB_INPUT})
 # 	${MAKE} $(word $(@:-prepare=),${FINEWEB_TXT})
 
-.PHONY: prepare-text
-prepare-text: ${FINEWEB_TXT}
+.PHONY: prepare-txt
+prepare-txt: ${FINEWEB_TXT}
 
 .PHONY: prepare-input
 prepare-input: ${FINEWEB_INPUT}
+
+.PHONY: prepare-jobs
+prepare-jobs: ${FINEWEB_INPUT_JOBS}
+
+
+
 
 .PHONY: prepare-model
 prepare-model: ${LANGPAIR}/${MODELNAME}/decoder.yml
@@ -304,6 +339,8 @@ ${LANGPAIR}/${MODELNAME}/model.intgemm8.bin: ${LANGPAIR}/${MODELNAME}/decoder.ym
 	sed 's/- .*\.npz/- model.intgemm8.bin/' \
 		< ${LANGPAIR}/${MODELNAME}/decoder.yml \
 		> ${LANGPAIR}/${MODELNAME}/decoder-int8.yml
+
+
 
 
 ##---------------------------------------
@@ -391,6 +428,15 @@ ${FINEWEB_TXT}:
 	| gzip -c > $@
 
 
+# ## new extraction
+
+# ${FINEWEB_TEXT}:
+# 	mkdir -p $(dir $@)
+# 	python scripts/jsonl_to_text.py -l en \
+# 		-i $(patsubst ${FINEWEB_TEXT_DIR}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$@) \
+# 	| gzip -c > $@
+
+
 
 
 ## fetch the selected model
@@ -443,10 +489,11 @@ endif
 ${FINEWEB_TRANS_DIR}/%.input.gz: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
-#	cd $(dir $@) && ln -s $(PWD)/$< $(notdir $@)
-	python scripts/segment.py -i $< | gzip -c > $@
+	cd $(dir $@) && ln -s $(PWD)/$< $(notdir $@)
+#	python scripts/segment.py -i $< | gzip -c > $@
 else
-	python scripts/segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
+	gzip -cd < $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
+#	python scripts/segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
 endif
 
 
@@ -535,9 +582,11 @@ endif
 ${TMPDIR}/${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
-	python scripts/segment.py -i $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
+#	python scripts/segment.py -i $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
+	gzip -cd < $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
 else
-	python scripts/segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
+	gzip -cd < $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
+#	python scripts/segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
 endif
 
 
@@ -605,11 +654,26 @@ ${FINEWEB_TRANS_RELEASE_TRG}: ${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz: ${FINEWE
 	    echo "translations are incomplete ($$i != $$t)"; \
 	  fi )
 
+#	    python scripts/segment.py -i $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT_DIR}/%,$<) \
+#	    | gzip -c > $(@:.${TRG}.gz=.${SRC}.gz); \
+#	    echo "- copying/post-processing the input data"; \
+#	    gzip -cd < $(<:.txt.gz=.input.gz) \
+#	    | ${POST_PROCESS} sed 's/>>.*<< //' \
+#	    | gzip -c > $(@:.${TRG}.gz=.${SRC}.gz); \
+
 
 ## dummy target for the source language file to satisfy some make targets
 
 ${FINEWEB_TRANS_RELEASE_SRC}: %.${SRC}.gz: %.${TRG}.gz
 	if [ -e $@ ]; then touch $@; fi
+
+
+# copy-src-data: ${FINEWEB_TRANS_RELEASE_SRC}
+
+# ${FINEWEB_TRANS_RELEASE_SRC}: ${FINEWEB_TRANS_RELEASE_DIR}/%.${SRC}.gz: ${FINEWEB_TXT_DIR}/%.txt.gz
+# 	python scripts/segment.py -i $< | gzip -c > $@
+
+
 
 
 

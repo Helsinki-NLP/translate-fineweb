@@ -9,18 +9,24 @@
 #SBATCH -n 1
 #SBATCH -N 1
 #SBATCH -t 72:00:00
-#SBATCH -p gpu
-#SBATCH --gres=gpu:v100:1
+#SBATCH -p small-g
+#SBATCH --gpus-per-node=4
+
+#SBATCH --account=project_462000764
 
 
+#SBATCH --cpus-per-task 56
 
 
-
-
-
-module load perl python-data cuda intel-oneapi-mkl openmpi && module list
+module -q load cray-python parallel expat Perl wget
 cd ${SLURM_SUBMIT_DIR:-.}
 pwd
 echo "Starting at `date`"
-make -j 8 HPC_HOST=puhti  fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00039.txt.gz
+CPU_BIND="mask_cpu:fe000000000000,fe00000000000000"
+CPU_BIND="${CPU_BIND},fe0000,fe000000"
+CPU_BIND="${CPU_BIND},fe,fe00"
+CPU_BIND="${CPU_BIND},fe00000000,fe0000000000"
+/appl/local/csc/soft/ai/bin/gpu-energy --save
+srun --cpu-bind=${CPU_BIND} make -j 8 HPC_HOST=lumi  fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00039.txt.gz
+/appl/local/csc/soft/ai/bin/gpu-energy --diff
 echo "Finishing at `date`"
