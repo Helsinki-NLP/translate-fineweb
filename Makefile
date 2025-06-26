@@ -83,6 +83,10 @@ upload:
 	mv README.md README.$(shell date +%F)
 	mv README.new README.md
 
+fineweb-edu-${LANGPAIR}.md:
+	swift list OELLM-synthetic --prefix fineweb-edu/350BT/translated/${LANGPAIR}/ \
+	| sed 's#^#* https://object.pouta.csc.fi/OELLM-synthetic/#' > fineweb-edu-${LANGPAIR}.md
+
 
 
 ##---------------------------------------------------------------
@@ -265,7 +269,7 @@ FINEWEB_CT2_JOBS := $(addsuffix -ct2-job,${FINEWEB_CT2})
 ## make sure that translation files are not deleted
 ## in case the job times out
 
-.PRECIOUS: ${FINEWEB_TRANS} ${FINEWEB_INT8} ${FINEWEB_CT2}
+.PRECIOUS: ${FINEWEB_TRANS} ${FINEWEB_MISSING_TRANS} ${FINEWEB_INT8} ${FINEWEB_CT2}
 
 
 ## auxiliary targets to submit SLURM jobs for translating each data shard
@@ -547,7 +551,7 @@ ${FINEWEB_MISSING_TRANS}: %.translated.gz: %.input.gz
 	zcat ${FINEWEB_TRANS_DIR}/$(notdir $(@:.translated.gz=.txt.gz)) | head -n -1 > $(@:.translated.gz=.txt)
 	zcat $@ >> $(@:.translated.gz=.txt)
 	gzip -f $(@:.translated.gz=.txt)
-	mv ${FINEWEB_TRANS_DIR}/$(notdir $(@:.translated.gz=.txt.gz)) $(@:.translated.gz=.incomplete.gz)
+	mv -f ${FINEWEB_TRANS_DIR}/$(notdir $(@:.translated.gz=.txt.gz)) $(@:.translated.gz=.incomplete.gz)
 	mv $(@:.translated.gz=.txt.gz) ${FINEWEB_TRANS_DIR}/
 
 
