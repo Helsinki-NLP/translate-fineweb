@@ -10,3 +10,5 @@ Automatically translated documents from fineweb-edu. Translations are based on [
 * [eng-swe](data/fineweb-edu-eng-swe.md)
 * [eng-ukr](data/fineweb-edu-eng-ukr.md)
 * [eng-deu](data/fineweb-edu-eng-deu.md)
+* [eng-fin](data/fineweb-edu-eng-fin.md)
+* [eng-nob](data/fineweb-edu-eng-nob.md)
