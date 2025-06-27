@@ -6,6 +6,8 @@ TOOLSDIR := ${REPOHOME}tools
 include ${REPOHOME}lib/env.mk
 include ${REPOHOME}lib/slurm.mk
 
+
+## project number for allas storage
 STORAGE_PROJECT := project_2005815
 
 ifdef LOCAL_SCRATCH
@@ -20,6 +22,7 @@ SRC ?= eng
 TRG ?= deu
 
 LANGPAIR := ${SRC}-${TRG}
+
 
 ## maximum input length (number sentence piece segments)
 
@@ -37,24 +40,29 @@ FINEWEB_END   := 50
 FINEWEB_DIR     := /scratch/project_462000963/datasets/HuggingFaceFW/fineweb-edu/350BT
 FINEWEB_JSONL   := $(wordlist ${FINEWEB_START},${FINEWEB_END},\
 			$(sort $(notdir $(wildcard ${FINEWEB_DIR}/*.gz))))
-FINEWEB_TXT_DIR := fineweb-edu/350BT/${SRC}
+
+FINEWEB_TXT_DIR := fineweb-edu/350BT/txt
 FINEWEB_TXT     := $(sort \
 			$(patsubst %.jsonl.gz,${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_JSONL}) \
 			$(wildcard ${FINEWEB_TXT_DIR}/*.txt.gz))
 
 
-# ## new version of text extraction
 
-# FINEWEB_TEXT     := $(sort \
-# 			$(patsubst %.jsonl.gz,${FINEWEB_TEXT_DIR}/%.txt.gz,${FINEWEB_JSONL}) \
-# 			$(wildcard ${FINEWEB_TEXT_DIR}/*.txt.gz))
-
+## new version of text extraction
+## (OBSOLETE)
 
 FINEWEB_TEXT_DIR := fineweb-edu/350BT/txt
 
 .PHONY: %_newtext
 %_newtext:
-	${MAKE} FINEWEB_TXT_DIR=${FINEWEB_TEXT_DIR} $(@:_newtext=)
+	${MAKE} FINEWEB_TXT_DIR=fineweb-edu/350BT/txt $(@:_newtext=)
+
+## old version of text extraction
+## (OBSOLETE)
+
+.PHONY: %_oldtext
+%_oldtext:
+	${MAKE} FINEWEB_TXT_DIR=fineweb-edu/350BT/${SRC} $(@:_oldtext=)
 
 ##---------------------------------------------------------------
 ## top-level targets
@@ -241,18 +249,20 @@ FINEWEB_INPUT_JOBS := $(addsuffix -job,${FINEWEB_INPUT})
 FINEWEB_TRANS_JOBS := $(addsuffix -job,${FINEWEB_TRANS})
 
 
-## release data (which is parallel and completely translated
-
-FINEWEB_TRANS_RELEASE_DIR  := fineweb-edu/350BT/translated/${LANGPAIR}/${MODELNAME}
-FINEWEB_TRANS_RELEASE_SRC  := $(patsubst ${FINEWEB_TRANS_DIR}/%.input.gz,${FINEWEB_TRANS_RELEASE_DIR}/%.${SRC}.gz,${FINEWEB_INPUT})
-FINEWEB_TRANS_RELEASE_TRG  := $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz,${FINEWEB_TRANS})
-FINEWEB_TRANS_RELEASE_ORG  := $(patsubst ${FINEWEB_TRANS_DIR}/%.input.gz,${FINEWEB_TRANS_RELEASE_DIR}/%.${SRC}.gz,${FINEWEB_INPUT})
-
 ## in case of broken translation jobs: missing translations are created here
 
 FINEWEB_MISSING_DIR   := fineweb-edu/350BT/missing/${LANGPAIR}/${MODELNAME}
 FINEWEB_MISSING_INPUT := $(wildcard ${FINEWEB_MISSING_DIR}/*.input.gz)
 FINEWEB_MISSING_TRANS := $(patsubst %.input.gz,%.translated.gz,$(FINEWEB_MISSING_INPUT))
+
+
+## release data (which is parallel and completely translated
+
+FINEWEB_TRANS_RELEASE_DIR  := fineweb-edu/350BT/translated
+FINEWEB_TRANS_RELEASE_SRC  := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/%,${FINEWEB_TXT})
+FINEWEB_TRANS_RELEASE_TRG  := $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%,${FINEWEB_TRANS})
+FINEWEB_TRANS_RELEASE_JSON := $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.gz,${FINEWEB_TRANS})
+FINEWEB_TRANS_RELEASE_INFO := ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/README.md
 
 
 ## translation targets for quantized models
@@ -299,10 +309,14 @@ ${FINEWEB_INT8_JOBS}:
 ## high-level targets for creating parallel release data
 ## (this checks for completeness by counting the number of lines for input/output)
 
-release-data: ${FINEWEB_TRANS_RELEASE_TRG} ${FINEWEB_TRANS_RELEASE_SRC}
+.PHONY: release-data
+release-data: ${FINEWEB_TRANS_RELEASE_SRC} ${FINEWEB_TRANS_RELEASE_TRG} ${FINEWEB_TRANS_RELEASE_JSON}
+	${MAKE} ${FINEWEB_TRANS_RELEASE_INFO}
 
+.PHONY: release-first
 release-first:  $(firstword ${FINEWEB_TRANS_RELEASE_SRC}) \
-		$(firstword ${FINEWEB_TRANS_RELEASE_TRG})
+		$(firstword ${FINEWEB_TRANS_RELEASE_TRG}) \
+		$(firstword ${FINEWEB_TRANS_RELEASE_JSON})
 
 
 
@@ -434,16 +448,6 @@ ${FINEWEB_TXT}:
 	| gzip -c > $@
 
 
-# ## new extraction
-
-# ${FINEWEB_TEXT}:
-# 	mkdir -p $(dir $@)
-# 	python scripts/jsonl_to_text.py -l en \
-# 		-i $(patsubst ${FINEWEB_TEXT_DIR}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$@) \
-# 	| gzip -c > $@
-
-
-
 
 ## fetch the selected model
 
@@ -496,28 +500,18 @@ ${FINEWEB_TRANS_DIR}/%.input.gz: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
 	cd $(dir $@) && ln -s $(PWD)/$< $(notdir $@)
-#	python scripts/segment.py -i $< | gzip -c > $@
 else
 	gzip -cd < $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
-#	python scripts/segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} | gzip -c > $@
 endif
 
 
 
 ## OPUS-MT models require post-processing (merging subword-tokens)
-## some special treatment for nno (replace hexadecimal codes)
+## (also add a script for converting hexcodes that happen with some models)
 
 ifneq (${MODELTYPE},HPLT-MT-models)
   POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | perl ${PWD}/scripts/convert_hexcodes.pl |
 endif
-
-# ifneq (${MODELTYPE},HPLT-MT-models)
-# ifeq (${TRG},nno)
-#   POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | perl ${PWD}/scripts/convert_hexcodes.pl |
-# else
-#   POST_PROCESS := sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' |
-# endif
-# endif
 
 
 ## finally: target for translating a file
@@ -588,11 +582,9 @@ endif
 ${TMPDIR}/${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
-#	python scripts/segment.py -i $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
 	gzip -cd < $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
 else
 	gzip -cd < $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
-#	python scripts/segment.py -i $< | ${LANGPAIR}/${MODELNAME}/preprocess.sh ${PREPROCESS_ARGS} > $@
 endif
 
 
@@ -636,51 +628,64 @@ ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
 ## TODO: do we need to create a source language file for each language pair?
 ##---------------------------------------
 
-${FINEWEB_TRANS_RELEASE_TRG}: ${FINEWEB_TRANS_RELEASE_DIR}/%.${TRG}.gz: ${FINEWEB_TRANS_DIR}/%.txt.gz
+
+${FINEWEB_TRANS_RELEASE_TRG}: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%: ${FINEWEB_TRANS_DIR}/%
 	@(echo "check output length for $<"; \
 	  i=`gzip -cd $(<:.txt.gz=.input.gz) | wc -l`; \
-	  t=`gzip -cd $< | wc -l`; \
-	  if [ $$i -eq $$t ]; then \
+	  o=`gzip -cd $< | wc -l`; \
+	  if [ $$i -eq $$o ]; then \
 	    echo "- translations are complete"; \
-	    mkdir -p $(dir $@); \
-	    echo "- copying/post-processing the input data"; \
-	    gzip -cd < $(<:.txt.gz=.input.gz) \
-	    | ${POST_PROCESS} sed 's/>>.*<< //' \
-	    | gzip -c > $(@:.${TRG}.gz=.${SRC}.gz); \
-	    echo "- copying the translated data"; \
-	    mv $< $@; \
-	    if [ ${TRG} == 'cat' ]; then \
-	       gzip -cd $@ | perl scripts/convert_hexcodes.pl | gzip -c > $@.tmp.gz; \
-	       mv -f $@.tmp.gz $@; \
-	    fi; \
-	    cd $(dir $@); \
-	    ln -s ${PWD}/$@ ${PWD}/$<;\
-	    touch ${PWD}/$@; \
+	    t=`gzip -cd $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT_DIR}/%,$<) | wc -l`; \
+	    if [ $$o -eq $$t ]; then \
+	      echo "- translation has the same length as original text data"; \
+	      mkdir -p $(dir $@); \
+	      rsync $< $@; \
+	    else \
+	      echo "- different lengths ($$t != $$o) for $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT_DIR}/%,$<) and $<"; \
+	    fi \
 	  else \
-	    echo "translations are incomplete ($$i != $$t)"; \
+	      echo "- incompletet translations ($$i != $$o) for $(<:.txt.gz=.input.gz) and $<"; \
 	  fi )
 
-#	    python scripts/segment.py -i $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT_DIR}/%,$<) \
-#	    | gzip -c > $(@:.${TRG}.gz=.${SRC}.gz); \
-#	    echo "- copying/post-processing the input data"; \
-#	    gzip -cd < $(<:.txt.gz=.input.gz) \
-#	    | ${POST_PROCESS} sed 's/>>.*<< //' \
-#	    | gzip -c > $(@:.${TRG}.gz=.${SRC}.gz); \
+${FINEWEB_TRANS_RELEASE_SRC}: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/%: ${FINEWEB_TXT_DIR}/%
+	mkdir -p $(dir $@)
+	rsync $< $@
 
 
-## dummy target for the source language file to satisfy some make targets
+## translations merged into jsonl files
+## TODO: do we need to keep the original text in the same document?
 
-${FINEWEB_TRANS_RELEASE_SRC}: %.${SRC}.gz: %.${TRG}.gz
-	if [ -e $@ ]; then touch $@; fi
+${FINEWEB_TRANS_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.gz: ${FINEWEB_TRANS_DIR}/%.txt.gz
+	mkdir -p $(dir $@)
+	python3 scripts/merge.py \
+		-j $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$<) \
+		-s $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT_DIR}/%,$<) \
+		-t $< \
+	| gzip -c > $@
 
 
-# copy-src-data: ${FINEWEB_TRANS_RELEASE_SRC}
+## readme file for the released translations
 
-# ${FINEWEB_TRANS_RELEASE_SRC}: ${FINEWEB_TRANS_RELEASE_DIR}/%.${SRC}.gz: ${FINEWEB_TXT_DIR}/%.txt.gz
-# 	python scripts/segment.py -i $< | gzip -c > $@
-
-
-
+${FINEWEB_TRANS_RELEASE_INFO}: ${FINEWEB_TRANS_RELEASE_TRG}
+	mkdir -p $(dir $@)
+	@echo "# fineweb-edu translated into ${TRG}"       > $@
+	@echo ""                                          >> $@
+	@echo "* translation model: ${MODEL}"             >> $@
+ifeq (${MODELTYPE},HPLT-MT-models)
+	@echo "* model URL: https://huggingface.co/HPLT/translate-${MODELLANG}-v1.0-hplt" >> $@
+else
+	@echo "* model URL: ${MODELZIP}"                  >> $@
+endif
+	@echo "* decoding beam size: ${MARIAN_BEAM_SIZE}" >> $@
+	@echo ""                                          >> $@
+	@echo "## release files"                          >> $@
+	@echo ""                                          >> $@
+	@for d in $^; do \
+	   if [ -e $$d ]; then \
+	     echo -n "* $$d:"  >> $@; \
+	     zcat $$d | wc -lw >> $@; \
+	   fi \
+	done
 
 
 ##---------------------------------------
@@ -723,17 +728,20 @@ ${JOBINFO_FILES}: %.info: %
 
 %-check-length:
 	@( I=$(word $(@:-check-length=),${FINEWEB_INPUT}); \
-	   T=$(word $(@:-check-length=),${FINEWEB_TRANS}); \
+	   O=$(word $(@:-check-length=),${FINEWEB_TRANS}); \
+	   T=$(word $(@:-check-length=),${FINEWEB_TXT}); \
 	   i=`gzip -cd $$I | wc -l`; \
+	   o=`gzip -cd $$O | wc -l`; \
 	   t=`gzip -cd $$T | wc -l`; \
-	   if [ $$i -eq $$t ]; then \
-	     echo "$$T is complete"; \
+	   if [ $$i -eq $$o ] && [  $$o -eq $$t ]; then \
+	     echo "$$O is complete"; \
 	   else \
-	     echo "$$T is incomplete"; \
+	     echo "$$O is incomplete"; \
 	     echo "$$i $$I"; \
+	     echo "$$o $$O"; \
 	     echo "$$t $$T"; \
-	     echo "missing: $$(( $$i-$$t ))"; \
+	     echo "missing: $$(( $$i-$$o ))"; \
 	     mkdir -p ${FINEWEB_MISSING_DIR}; \
 	     M=$(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_MISSING_DIR}/%,$(word $(@:-check-length=),${FINEWEB_INPUT})); \
-	     zcat $$I | tail -n $$(( $$i-$$t+1 )) | gzip -c > $$M; \
+	     zcat $$I | tail -n $$(( $$i-$$o+1 )) | gzip -c > $$M; \
 	   fi )

@@ -1,0 +1,30 @@
+Job ID: 28527118
+Cluster: puhti
+User/Group: tiedeman/tiedeman
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 8
+CPU Utilized: 2-09:16:40
+CPU Efficiency: 12.52% of 19-01:27:44 core-walltime
+Job Wall-clock time: 2-09:10:58
+Memory Utilized: 4.08 GB
+Memory Efficiency: 6.38% of 64.00 GB
+Job consumed 4254.40 CSC billing units based on following used resources
+Billed project: project_2002688
+CPU BU: 457.46
+Mem BU: 365.97
+GPU BU: 3430.97
+GPU job efficiency:
+------------------------------------------------------------------------
+GPU load
+      Hostname        GPU Id      Mean (%)    stdDev (%)       Max (%)
+        r02g04             1         85.44          7.28         99.00
+------------------------------------------------------------------------
+GPU memory
+      Hostname        GPU Id    Mean (GiB)  stdDev (GiB)     Max (GiB)
+        r02g04             1         21.24          0.68         21.26
+------------------------------------------------------------------------
+GPU energy
+      Hostname        GPU Id   Energy (Wh)
+        r02g04             1      13514.87
+------------------------------------------------------------------------

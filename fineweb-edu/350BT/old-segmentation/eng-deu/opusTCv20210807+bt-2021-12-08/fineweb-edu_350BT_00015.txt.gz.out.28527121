@@ -1,0 +1,14 @@
+/scratch/project_2000661/translate-fineweb
+Starting at Sat Jun 14 20:39:04 EEST 2025
+make[2]: Entering directory '/scratch/project_2000661/translate-fineweb'
+make prepare-model
+make[3]: Entering directory '/scratch/project_2000661/translate-fineweb'
+make[3]: Nothing to be done for 'prepare-model'.
+make[3]: Leaving directory '/scratch/project_2000661/translate-fineweb'
+module load perl python-data cuda intel-oneapi-mkl openmpi && module list && cd eng-deu/opusTCv20210807+bt-2021-12-08 && /projappl/project_2001194/marian-dev/build/marian-decoder \
+	-i /scratch/project_2000661/translate-fineweb/fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00015.input.gz \
+	-c decoder.yml \
+	-b 4 -n1 -d 0 --quiet-translation -w 20000 --mini-batch 128 --maxi-batch 5 --maxi-batch-sort src --max-length 512 --max-length-crop |\
+sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$//' | gzip -c > /scratch/project_2000661/translate-fineweb/fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00015.txt.gz
+make[2]: Leaving directory '/scratch/project_2000661/translate-fineweb'
+Finishing at Tue Jun 17 05:52:41 EEST 2025
