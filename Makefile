@@ -711,22 +711,24 @@ ${FINEWEB_TRANS_RELEASE_SRC}: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/%: ${FINEW
 
 
 ## translations merged into jsonl files
-## TODO: do we need to keep the original text in the same document?
+## TODO: do we need to keep the original text in the same jsonl document?
 
-${FINEWEB_TRANS_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.gz: ${FINEWEB_TRANS_DIR}/%.txt.gz
-	mkdir -p $(dir $@)
-	python3 scripts/merge.py \
-		-j $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$<) \
-		-s $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT_DIR}/%,$<) \
+${FINEWEB_TRANS_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.gz: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz
+	if [ -e $< ]; then \
+	  mkdir -p $(dir $@)
+	  python3 scripts/merge.py \
+		-j $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$<) \
+		-s $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_TXT_DIR}/%.txt.gz,$<) \
 		-t $< \
-	| gzip -c > $@
+	  | gzip -c > $@; \
+	fi
 
 
 ## readme file for the released translations
 
 ${FINEWEB_TRANS_RELEASE_INFO}: ${FINEWEB_TRANS_RELEASE_TRG} ${FINEWEB_TRANS_RELEASE_JSON}
 	mkdir -p $(dir $@)
-	@echo "# ${DATASET} translated into ${TRG}"       > $@
+	@echo "# ${DATASET} translated into ${TRG}"        > $@
 	@echo ""                                          >> $@
 	@echo "* translation model: ${MODEL}"             >> $@
 ifeq (${MODELTYPE},HPLT-MT-models)
@@ -738,26 +740,26 @@ endif
 	@echo ""                                          >> $@
 	@echo "## release files"                          >> $@
 	@echo ""                                          >> $@
-	@echo "Translated documents in JSONL:"        >> $@
+	@echo "Translated documents in JSONL:"            >> $@
 	@for d in ${FINEWEB_TRANS_RELEASE_JSON}; do \
 	   if [ -e $$d ]; then \
-	     echo -n "* [$$d](${STORAGE_URL}$$d): "  >> $@; \
-	     zcat $$d | wc -lw  >> $@; \
+	     echo -n "* [$$d](${STORAGE_URL}$$d): "       >> $@; \
+	     zcat $$d | wc -lw                            >> $@; \
 	   fi \
 	done
 	@echo ""                                          >> $@
 	@echo "Translations in plain text format:"        >> $@
 	@for d in ${FINEWEB_TRANS_RELEASE_TRG}; do \
 	   if [ -e $$d ]; then \
-	     echo -n "* [$$d](${STORAGE_URL}$$d): "  >> $@; \
+	     echo -n "* [$$d](${STORAGE_URL}$$d): "       >> $@; \
 	     zcat $$d | wc -lw  >> $@; \
 	   fi \
 	done
 	@echo ""                                          >> $@
-	@echo "Original data in plain text format:"        >> $@
+	@echo "Original data in plain text format:"       >> $@
 	@for d in ${FINEWEB_TRANS_RELEASE_SRC}; do \
 	   if [ -e $$d ]; then \
-	     echo -n "* [$$d](${STORAGE_URL}$$d): "  >> $@; \
+	     echo -n "* [$$d](${STORAGE_URL}$$d): "       >> $@; \
 	     zcat $$d | wc -lw  >> $@; \
 	   fi \
 	done
