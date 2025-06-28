@@ -9,6 +9,7 @@ include ${REPOHOME}lib/slurm.mk
 
 ## project number for allas storage
 STORAGE_PROJECT := project_2005815
+STORAGE_URL     := https://object.pouta.csc.fi/OELLM-synthetic/
 
 ifdef LOCAL_SCRATCH
   TMPDIR = ${LOCAL_SCRATCH}
@@ -29,40 +30,98 @@ LANGPAIR := ${SRC}-${TRG}
 MARIAN_MAX_LENGTH := 512
 
 
+## set to 1 to activate splitting into sentences
+## when preparing the data
+## otherwise: keep lines and only split long lines
+
+SENTENCE_SPLIT := 0
+
+
 ## select fineweb shards to be used (start and end, starting with 1)
 
+# DATASET     := spyysalo/nemotron-cc-10K-sample
+DATASET       := fineweb-edu/350BT
 FINEWEB_START := 1
 FINEWEB_END   := 50
 
 ## data sources (in original jsonl and in plain text for translation)
 ## (only selected shards)
 
-FINEWEB_DIR     := /scratch/project_462000963/datasets/HuggingFaceFW/fineweb-edu/350BT
+# FINEWEB_DIR     := /scratch/project_462000963/datasets/HuggingFaceFW/${DATASET}
+FINEWEB_DIR     := ${PWD}/HF/${DATASET}
 FINEWEB_JSONL   := $(wordlist ${FINEWEB_START},${FINEWEB_END},\
 			$(sort $(notdir $(wildcard ${FINEWEB_DIR}/*.gz))))
 
-FINEWEB_TXT_DIR := fineweb-edu/350BT/txt
+FINEWEB_TXT_DIR := ${DATASET}/txt
 FINEWEB_TXT     := $(sort \
 			$(patsubst %.jsonl.gz,${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_JSONL}) \
 			$(wildcard ${FINEWEB_TXT_DIR}/*.txt.gz))
 
 
 
+
+## run targets for nemotron10K
+## NOTE: sentence splitting is activated!
+
+.PHONY: %_nemotron10K
+%_nemotron10K:
+	${MAKE} SENTENCE_SPLIT=1 DATASET=spyysalo/nemotron-cc-10K-sample $(@:_nemotron10K=)
+
+
+OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
+		gle glg cat ces swe tur bul \
+		lav lit slk nld dan ell est fra \
+		hrv hun ita pol por ron \
+		slv eus bos isl kat \
+		mkd sqi srp
+
+nemotron10K:
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l prepare_nemotron10K; \
+	done
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l translate-jobs_nemotron10K; \
+	done
+
+nemotron10K-release:
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l release-data_nemotron10K; \
+	done
+
+
+fineweb-prepare:
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l prepare-job; \
+	done
+
+fineweb-translate:
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l translate-jobs; \
+	done
+
+
 ## new version of text extraction
 ## (OBSOLETE)
 
-FINEWEB_TEXT_DIR := fineweb-edu/350BT/txt
+FINEWEB_TEXT_DIR := ${DATASET}/txt
 
 .PHONY: %_newtext
 %_newtext:
-	${MAKE} FINEWEB_TXT_DIR=fineweb-edu/350BT/txt $(@:_newtext=)
+	${MAKE} FINEWEB_TXT_DIR=${DATASET}/txt $(@:_newtext=)
 
 ## old version of text extraction
 ## (OBSOLETE)
 
 .PHONY: %_oldtext
 %_oldtext:
-	${MAKE} FINEWEB_TXT_DIR=fineweb-edu/350BT/${SRC} $(@:_oldtext=)
+	${MAKE} FINEWEB_TXT_DIR=${DATASET}/${SRC} $(@:_oldtext=)
+
+
+.PHONY: %_newtext2
+%_newtext2:
+	${MAKE} FINEWEB_TXT_DIR=${DATASET}/txt2 $(@:_newtext2=)
+
+
 
 ##---------------------------------------------------------------
 ## top-level targets
@@ -83,19 +142,24 @@ all: translate
 
 .PHONY: upload
 upload:
-	swift upload OELLM-synthetic --use-slo --segment-size 5G fineweb-edu/350BT/translated/${LANGPAIR}
+	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated
 	mkdir -p data
-	swift list OELLM-synthetic --prefix fineweb-edu/350BT/translated/${LANGPAIR}/ \
-	| sed 's#^#* https://object.pouta.csc.fi/OELLM-synthetic/#' > data/fineweb-edu-${LANGPAIR}.md
-	grep -v 'fineweb-edu-${LANGPAIR}.md' README.md             > README.new
-	echo '* [${LANGPAIR}](data/fineweb-edu-${LANGPAIR}.md)'   >> README.new
+	swift list OELLM-synthetic --prefix ${DATASET}/translated/ \
+	| sed 's#^#* ${STORAGE_URL}#' > data/$(subst /,-,${DATASET}).md
+	grep -v "${DATASET}/.*/README.md" README.md        > README.new
+	for f in `find ${DATASET}/translated -name 'README.md'`; do \
+	  echo "* [$$f]($$f)"                             >> README.new; \
+	done
 	mv README.md README.$(shell date +%F)
 	mv README.new README.md
+	git add data/$(subst /,-,${DATASET}).md
+	find ${DATASET}/translated -name 'README.md' | xargs git add
 
-data/fineweb-edu-${LANGPAIR}.md:
-	mkdir -p data
-	swift list OELLM-synthetic --prefix fineweb-edu/350BT/translated/${LANGPAIR}/ \
-	| sed 's#^#* https://object.pouta.csc.fi/OELLM-synthetic/#' > data/fineweb-edu-${LANGPAIR}.md
+
+#	grep -v '${FINEWEB_TRANS_RELEASE_INFO}' README.md                        > README.new
+#	echo '* [${FINEWEB_TRANS_RELEASE_INFO}](${FINEWEB_TRANS_RELEASE_INFO})' >> README.new
+#	mv README.md README.$(shell date +%F)
+#	mv README.new README.md
 
 
 
@@ -128,18 +192,8 @@ translate-job-%:
 translate-jobtest:
 	${MAKE} GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=4 NR_GPUS=1 HPC_TIME=30 HPC_GPUQUEUE=dev-g translate-first.${TRANSLATE_JOB_TYPE}
 
-translate-jobtest2:
-	${MAKE} MARIAN_BEAM_SIZE=1 MARIAN_MINI_BATCH=16 MARIAN_MAXI_BATCH=2 GPUJOB_HPC_MEM=128g GPUJOB_HPC_CORES=8 NR_GPUS=2 MARIAN_GPUS='0 1' HPC_TIME=30 HPC_GPUQUEUE=dev-g translate-first.${TRANSLATE_JOB_TYPE}
-
 translate-jobtest4:
-	${MAKE} MARIAN_BEAM_SIZE=1 MARIAN_MINI_BATCH=16 MARIAN_MAXI_BATCH=2 GPUJOB_HPC_MEM=128g GPUJOB_HPC_CORES=8 NR_GPUS=4 MARIAN_GPUS='0 1 2 3' HPC_TIME=30 HPC_GPUQUEUE=dev-g translate-first.${TRANSLATE_JOB_TYPE}
-
-
-
-
-
-translate-jobtestcpu:
-	${MAKE} GPUJOB_HPC_MEM=128g GPUJOB_HPC_CORES=4 HPC_TIME=30 HPC_GPUQUEUE=dev translate-first.submitcpu
+	${MAKE} GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=4 MARIAN_GPUS='0 1 2 3' HPC_TIME=30 HPC_GPUQUEUE=dev-g translate-first.${TRANSLATE_JOB_TYPE}
 
 
 
@@ -241,7 +295,7 @@ print-modelinfo:
 
 ## translation targets (using marian-decoder)
 
-FINEWEB_TRANS_DIR  := fineweb-edu/350BT/${LANGPAIR}/${MODELNAME}
+FINEWEB_TRANS_DIR  := ${DATASET}/${LANGPAIR}/${MODELNAME}
 FINEWEB_INPUT      := $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_TRANS_DIR}/%.input.gz,${FINEWEB_TXT})
 FINEWEB_TRANS      := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT})
 
@@ -251,14 +305,14 @@ FINEWEB_TRANS_JOBS := $(addsuffix -job,${FINEWEB_TRANS})
 
 ## in case of broken translation jobs: missing translations are created here
 
-FINEWEB_MISSING_DIR   := fineweb-edu/350BT/missing/${LANGPAIR}/${MODELNAME}
+FINEWEB_MISSING_DIR   := ${DATASET}/missing/${LANGPAIR}/${MODELNAME}
 FINEWEB_MISSING_INPUT := $(wildcard ${FINEWEB_MISSING_DIR}/*.input.gz)
 FINEWEB_MISSING_TRANS := $(patsubst %.input.gz,%.translated.gz,$(FINEWEB_MISSING_INPUT))
 
 
 ## release data (which is parallel and completely translated
 
-FINEWEB_TRANS_RELEASE_DIR  := fineweb-edu/350BT/translated
+FINEWEB_TRANS_RELEASE_DIR  := ${DATASET}/translated
 FINEWEB_TRANS_RELEASE_SRC  := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/%,${FINEWEB_TXT})
 FINEWEB_TRANS_RELEASE_TRG  := $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%,${FINEWEB_TRANS})
 FINEWEB_TRANS_RELEASE_JSON := $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.gz,${FINEWEB_TRANS})
@@ -273,7 +327,7 @@ FINEWEB_INT8_JOBS  := $(addsuffix -job,${FINEWEB_INT8})
 
 ## translation targets for ctranslate2
 
-FINEWEB_CT2_DIR  := fineweb-edu/350BT/ct2/${LANGPAIR}/${MODELNAME}
+FINEWEB_CT2_DIR  := ${DATASET}/ct2/${LANGPAIR}/${MODELNAME}
 FINEWEB_CT2      := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_CT2_DIR}/%,${FINEWEB_TXT})
 FINEWEB_CT2_JOBS := $(addsuffix -ct2-job,${FINEWEB_CT2})
 
@@ -431,19 +485,23 @@ ${FINEWEB_CT2_JOBS}:
 ##---------------------------------------
 
 
+ifeq (${SENTENCE_SPLIT},1)
+  JSONL2TEXT_ARGS = -s
+endif
+
 ## preparing a data file for translation
 ## (a) with dependency on the original jsonl file:
 #
 # ${FINEWEB_TXT}: ${FINEWEB_TXT_DIR}/%.txt.gz: ${FINEWEB_DIR}/%.jsonl.gz
 # 	mkdir -p $(dir $@)
-# 	python scripts/jsonl_to_text.py -i $< -l en | gzip -c > $@
+# 	python scripts/jsonl_to_text.py -i $< -l en ${JSONL2TEXT_ARGS} | gzip -c > $@
 
 
 ## (b) without dependency
 
 ${FINEWEB_TXT}:
 	mkdir -p $(dir $@)
-	python scripts/jsonl_to_text.py -l en \
+	python scripts/jsonl_to_text.py -l en ${JSONL2TEXT_ARGS} \
 		-i $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$@) \
 	| gzip -c > $@
 
@@ -666,9 +724,9 @@ ${FINEWEB_TRANS_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl
 
 ## readme file for the released translations
 
-${FINEWEB_TRANS_RELEASE_INFO}: ${FINEWEB_TRANS_RELEASE_TRG}
+${FINEWEB_TRANS_RELEASE_INFO}: ${FINEWEB_TRANS_RELEASE_TRG} ${FINEWEB_TRANS_RELEASE_JSON}
 	mkdir -p $(dir $@)
-	@echo "# fineweb-edu translated into ${TRG}"       > $@
+	@echo "# ${DATASET} translated into ${TRG}"       > $@
 	@echo ""                                          >> $@
 	@echo "* translation model: ${MODEL}"             >> $@
 ifeq (${MODELTYPE},HPLT-MT-models)
@@ -680,10 +738,27 @@ endif
 	@echo ""                                          >> $@
 	@echo "## release files"                          >> $@
 	@echo ""                                          >> $@
-	@for d in $^; do \
+	@echo "Translated documents in JSONL:"        >> $@
+	@for d in ${FINEWEB_TRANS_RELEASE_JSON}; do \
 	   if [ -e $$d ]; then \
-	     echo -n "* $$d:"  >> $@; \
-	     zcat $$d | wc -lw >> $@; \
+	     echo -n "* [$$d](${STORAGE_URL}$$d): "  >> $@; \
+	     zcat $$d | wc -lw  >> $@; \
+	   fi \
+	done
+	@echo ""                                          >> $@
+	@echo "Translations in plain text format:"        >> $@
+	@for d in ${FINEWEB_TRANS_RELEASE_TRG}; do \
+	   if [ -e $$d ]; then \
+	     echo -n "* [$$d](${STORAGE_URL}$$d): "  >> $@; \
+	     zcat $$d | wc -lw  >> $@; \
+	   fi \
+	done
+	@echo ""                                          >> $@
+	@echo "Original data in plain text format:"        >> $@
+	@for d in ${FINEWEB_TRANS_RELEASE_SRC}; do \
+	   if [ -e $$d ]; then \
+	     echo -n "* [$$d](${STORAGE_URL}$$d): "  >> $@; \
+	     zcat $$d | wc -lw  >> $@; \
 	   fi \
 	done
 
