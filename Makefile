@@ -159,7 +159,7 @@ upload:
 	mv README.md README.$(shell date +%F)
 	mv README.new README.md
 	git add data/$(subst /,-,${DATASET}).md
-	find ${DATASET}/translated -name 'README.md' | xargs git add
+	find ${DATASET}/translated -name '*.md' | xargs git add
 
 
 #	grep -v '${FINEWEB_TRANS_RELEASE_INFO}' README.md                        > README.new
