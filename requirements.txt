@@ -1,9 +1,11 @@
+fastparquet
+pandas
 datatrove
 pyarrow
-mosestokenizer
 toolwrapper>=0.4.1
 loomchild-segment
-ctranslate2
 sentencepiece
+ctranslate2
+# mosestokenizer
 # nvidia-cublas-cu12
 # nvidia-cudnn-cu12
