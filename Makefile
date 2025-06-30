@@ -328,6 +328,7 @@ FINEWEB_TRANS_RELEASE_SRC  := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_RE
 FINEWEB_TRANS_RELEASE_TRG  := $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%,${FINEWEB_TRANS})
 FINEWEB_TRANS_RELEASE_JSON := $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.gz,${FINEWEB_TRANS})
 FINEWEB_TRANS_RELEASE_PARQUET := $(patsubst %.jsonl.gz,%.parquet,${FINEWEB_TRANS_RELEASE_JSON})
+FINEWEB_TRANS_RELEASE_EXAMPLE := $(patsubst %.txt.gz,%.md,${FINEWEB_TRANS_RELEASE_TRG})
 FINEWEB_TRANS_RELEASE_INFO := ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/README.md
 
 
@@ -377,7 +378,8 @@ ${FINEWEB_INT8_JOBS}:
 
 .PHONY: release-data
 release-data: 	${FINEWEB_TRANS_RELEASE_SRC} ${FINEWEB_TRANS_RELEASE_TRG} \
-		${FINEWEB_TRANS_RELEASE_JSON} ${FINEWEB_TRANS_RELEASE_PARQUET}
+		${FINEWEB_TRANS_RELEASE_JSON} ${FINEWEB_TRANS_RELEASE_PARQUET} \
+		${FINEWEB_TRANS_RELEASE_EXAMPLE}
 	${MAKE} ${FINEWEB_TRANS_RELEASE_INFO}
 
 .PHONY: release-first
@@ -746,6 +748,16 @@ ${FINEWEB_TRANS_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl
 
 %.parquet: %.jsonl.gz
 	${PYTHONENV} python scripts/jsonl_to_parquet.py -i $< -o $@
+
+${FINEWEB_TRANS_RELEASE_EXAMPLE}: %.md: %.txt.gz
+	if [ -e $< ]; then \
+	  mkdir -p $(dir $@); \
+	  python3 scripts/translation_examples.py \
+		-j $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$<) \
+		-s $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_TXT_DIR}/%.txt.gz,$<) \
+		-t $< -l ${TRG} | head -10 > $@; \
+	fi
+
 
 
 ## readme file for the released translations
