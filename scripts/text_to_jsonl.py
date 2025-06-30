@@ -31,6 +31,7 @@ with gzip.open(args.jsonl_file,'rt') as j:
                 for text in doc.splitlines():
                     text = text.strip()
                     if not text:
+                        translations.append("\n")
                         continue
 
                     source_text = s.readline().rstrip()
