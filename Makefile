@@ -750,12 +750,14 @@ ${FINEWEB_TRANS_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl
 #	python3 scripts/merge.py
 
 %.parquet: %.jsonl.gz
-	${PYTHONENV} python scripts/jsonl_to_parquet.py -i $< -o $@
+	if [ -e $< ]; then \
+	  ${PYTHONENV} python scripts/jsonl_to_parquet.py -i $< -o $@; \
+	fi
 
 ${FINEWEB_TRANS_RELEASE_EXAMPLE}: %.md: %.txt.gz
 	if [ -e $< ]; then \
 	  mkdir -p $(dir $@); \
-	  python3 scripts/translation_examples.py \
+	  ${PYTHONENV} python scripts/translation_examples.py \
 		-j $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$<) \
 		-s $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_TXT_DIR}/%.txt.gz,$<) \
 		-t $< -l ${TRG} | head -10 > $@; \
@@ -797,6 +799,7 @@ endif
 	@for d in ${FINEWEB_TRANS_RELEASE_TRG}; do \
 	   if [ -e $$d ]; then \
 	     echo -n "* [$$d](${STORAGE_URL}$$d): "       >> $@; \
+	     echo "get stats for $$d"; \
 	     zcat $$d | wc -lw  >> $@; \
 	   fi \
 	done
@@ -805,6 +808,7 @@ endif
 	@for d in ${FINEWEB_TRANS_RELEASE_SRC}; do \
 	   if [ -e $$d ]; then \
 	     echo -n "* [$$d](${STORAGE_URL}$$d): "       >> $@; \
+	     echo "get stats for $$d"; \
 	     zcat $$d | wc -lw  >> $@; \
 	   fi \
 	done
