@@ -149,7 +149,10 @@ upload:
 	mkdir -p data
 	swift list OELLM-synthetic --prefix ${DATASET}/translated/ \
 	| sed 's#^#* ${STORAGE_URL}#' > data/$(subst /,-,${DATASET}).md
-	grep -v "${DATASET}/.*/README.md" README.md        > README.new
+	grep -v '${DATASET}' README.md                     > README.new
+	echo ""                                           >> README.new
+	echo "## release files for ${DATASET}"            >> README.new
+	echo ""                                           >> README.new
 	for f in `find ${DATASET}/translated -name 'README.md' | sort`; do \
 	  echo "* [$$f]($$f)"                             >> README.new; \
 	done
@@ -762,7 +765,7 @@ ${FINEWEB_TRANS_RELEASE_EXAMPLE}: %.md: %.txt.gz
 
 ## readme file for the released translations
 
-${FINEWEB_TRANS_RELEASE_INFO}: ${FINEWEB_TRANS_RELEASE_TRG} ${FINEWEB_TRANS_RELEASE_JSON}
+${FINEWEB_TRANS_RELEASE_INFO}: ${FINEWEB_TRANS_RELEASE_TRG} ${FINEWEB_TRANS_RELEASE_JSON} ${FINEWEB_TRANS_RELEASE_EXAMPLE}
 	mkdir -p $(dir $@)
 	@echo "# ${DATASET} translated into ${TRG}"        > $@
 	@echo ""                                          >> $@
@@ -779,14 +782,14 @@ endif
 	@echo "Translated documents in parquet:"          >> $@
 	@for d in ${FINEWEB_TRANS_RELEASE_PARQUET}; do \
 	   if [ -e $$d ]; then \
-	     echo -n "* [$$d](${STORAGE_URL}$$d)"         >> $@; \
+	     echo "* [$$d](${STORAGE_URL}$$d)"            >> $@; \
 	   fi \
 	done
 	@echo ""                                          >> $@
 	@echo "Translated documents in JSONL:"            >> $@
 	@for d in ${FINEWEB_TRANS_RELEASE_JSON}; do \
 	   if [ -e $$d ]; then \
-	     echo -n "* [$$d](${STORAGE_URL}$$d)"         >> $@; \
+	     echo "* [$$d](${STORAGE_URL}$$d)"            >> $@; \
 	   fi \
 	done
 	@echo ""                                          >> $@
@@ -805,6 +808,14 @@ endif
 	     zcat $$d | wc -lw  >> $@; \
 	   fi \
 	done
+	@echo ""                                          >> $@
+	@echo "Example translations"                      >> $@
+	@for d in $(notdir ${FINEWEB_TRANS_RELEASE_EXAMPLE}); do \
+	   if [ -e $(dir ${FINEWEB_TRANS_RELEASE_EXAMPLE})$$d ]; then \
+	     echo "* [$$d]($$d)"                          >> $@; \
+	   fi \
+	done
+
 
 
 ##---------------------------------------

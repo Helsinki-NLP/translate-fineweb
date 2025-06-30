@@ -6,17 +6,7 @@ Automatically translated documents from fineweb-edu. Translations are based on [
 ## First edition
 
 The translated data sets below are based on some preliminary runs with slightly erroneous segmentation.
-
-* [eng-spa](data/fineweb-edu-eng-spa.md)
-* [eng-cat](data/fineweb-edu-eng-cat.md)
-* [eng-glg](data/fineweb-edu-eng-glg.md)
-* [eng-gle](data/fineweb-edu-eng-gle.md)
-* [eng-mlt](data/fineweb-edu-eng-mlt.md)
-* [eng-swe](data/fineweb-edu-eng-swe.md)
-* [eng-ukr](data/fineweb-edu-eng-ukr.md)
-* [eng-deu](data/fineweb-edu-eng-deu.md)
-* [eng-fin](data/fineweb-edu-eng-fin.md)
-* [eng-nob](data/fineweb-edu-eng-nob.md)
+Links are availabe from [README-2024-06-26.md](README-2024-06-26.md)
 
 
 ## Second edition
