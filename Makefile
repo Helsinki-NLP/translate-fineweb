@@ -809,7 +809,9 @@ endif
 	   fi \
 	done
 	@echo ""                                          >> $@
-	@echo "Example translations"                      >> $@
+	@echo ""                                          >> $@
+	@echo "## Example translations"                   >> $@
+	@echo ""                                          >> $@
 	@for d in $(notdir ${FINEWEB_TRANS_RELEASE_EXAMPLE}); do \
 	   if [ -e $(dir ${FINEWEB_TRANS_RELEASE_EXAMPLE})$$d ]; then \
 	     echo "* [$$d]($$d)"                          >> $@; \

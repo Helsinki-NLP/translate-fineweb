@@ -9,7 +9,11 @@ The translated data sets below are based on some preliminary runs with slightly 
 Links are availabe from [README-2024-06-26.md](README-2024-06-26.md)
 
 
-## Second edition
+## release files for fineweb-edu/350BT
+
+* [fineweb-edu/350BT/translated/txt/deu/README.md](fineweb-edu/350BT/translated/txt/deu/README.md)
+
+## release files for spyysalo/nemotron-cc-10K-sample
 
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/als/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/als/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/bos/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/bos/README.md)
@@ -46,4 +50,3 @@ Links are availabe from [README-2024-06-26.md](README-2024-06-26.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/swe/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/swe/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/tur/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/tur/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/ukr/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/ukr/README.md)
-* [fineweb-edu/350BT/translated/txt/deu/README.md](fineweb-edu/350BT/translated/txt/deu/README.md)
