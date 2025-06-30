@@ -91,6 +91,8 @@ LOAD_GPU_ENV  = module -q load ${GPU_MODULES}
 # LOAD_CPU_ENV  = module load LUMI/23.03 && module load ${CPU_MODULES}
 # LOAD_GPU_ENV  = module load LUMI/23.03 && module load ${GPU_MODULES}
 
+PYTHONENV = module -q load pytorch &&
+
 # GPU_MODULES   = marian/lumi cray-python parallel
 # LOAD_GPU_ENV  = module use -a ${EXTRA_MODULES_DIR} && module load ${GPU_MODULES}
 

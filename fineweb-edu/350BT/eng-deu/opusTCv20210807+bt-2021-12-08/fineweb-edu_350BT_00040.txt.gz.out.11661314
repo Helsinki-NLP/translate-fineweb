@@ -1,9 +1,0 @@
-/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb
-Starting at Mon Jun 30 04:03:23 EEST 2025
-make[2]: Entering directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
-make[2]: 'fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00040.txt.gz' is up to date.
-make[2]: Leaving directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
-GPU 0: 0.06 Wh, avg power: 95.04 W (2.20 s)
-GPU 2: 0.05 Wh, avg power: 89.63 W (2.20 s)
-TOTAL: 0.11 Wh
-Finishing at Mon Jun 30 04:03:26 EEST 2025

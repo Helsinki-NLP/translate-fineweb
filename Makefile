@@ -327,6 +327,7 @@ FINEWEB_TRANS_RELEASE_DIR  := ${DATASET}/translated
 FINEWEB_TRANS_RELEASE_SRC  := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/%,${FINEWEB_TXT})
 FINEWEB_TRANS_RELEASE_TRG  := $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%,${FINEWEB_TRANS})
 FINEWEB_TRANS_RELEASE_JSON := $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.gz,${FINEWEB_TRANS})
+FINEWEB_TRANS_RELEASE_PARQUET := $(patsubst %.jsonl.gz,%.parquet,${FINEWEB_TRANS_RELEASE_JSON})
 FINEWEB_TRANS_RELEASE_INFO := ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/README.md
 
 
@@ -375,7 +376,8 @@ ${FINEWEB_INT8_JOBS}:
 ## (this checks for completeness by counting the number of lines for input/output)
 
 .PHONY: release-data
-release-data: ${FINEWEB_TRANS_RELEASE_SRC} ${FINEWEB_TRANS_RELEASE_TRG} ${FINEWEB_TRANS_RELEASE_JSON}
+release-data: 	${FINEWEB_TRANS_RELEASE_SRC} ${FINEWEB_TRANS_RELEASE_TRG} \
+		${FINEWEB_TRANS_RELEASE_JSON} ${FINEWEB_TRANS_RELEASE_PARQUET}
 	${MAKE} ${FINEWEB_TRANS_RELEASE_INFO}
 
 .PHONY: release-first
@@ -733,12 +735,17 @@ ${FINEWEB_TRANS_RELEASE_SRC}: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/%: ${FINEW
 ${FINEWEB_TRANS_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.gz: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz
 	if [ -e $< ]; then \
 	  mkdir -p $(dir $@); \
-	  python3 scripts/merge.py \
+	  python3 scripts/text_to_jsonl.py \
 		-j $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$<) \
 		-s $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_TXT_DIR}/%.txt.gz,$<) \
-		-t $< \
+		-t $< -l ${TRG} \
 	  | gzip -c > $@; \
 	fi
+
+#	python3 scripts/merge.py
+
+%.parquet: %.jsonl.gz
+	${PYTHONENV} python scripts/jsonl_to_parquet.py -i $< -o $@
 
 
 ## readme file for the released translations
@@ -757,11 +764,17 @@ endif
 	@echo ""                                          >> $@
 	@echo "## release files"                          >> $@
 	@echo ""                                          >> $@
+	@echo "Translated documents in parquet:"          >> $@
+	@for d in ${FINEWEB_TRANS_RELEASE_PARQUET}; do \
+	   if [ -e $$d ]; then \
+	     echo -n "* [$$d](${STORAGE_URL}$$d)"         >> $@; \
+	   fi \
+	done
+	@echo ""                                          >> $@
 	@echo "Translated documents in JSONL:"            >> $@
 	@for d in ${FINEWEB_TRANS_RELEASE_JSON}; do \
 	   if [ -e $$d ]; then \
-	     echo -n "* [$$d](${STORAGE_URL}$$d): "       >> $@; \
-	     zcat $$d | wc -lw                            >> $@; \
+	     echo -n "* [$$d](${STORAGE_URL}$$d)"         >> $@; \
 	   fi \
 	done
 	@echo ""                                          >> $@
