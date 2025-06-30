@@ -149,12 +149,12 @@ upload:
 	mkdir -p data
 	swift list OELLM-synthetic --prefix ${DATASET}/translated/ \
 	| sed 's#^#* ${STORAGE_URL}#' > data/$(subst /,-,${DATASET}).md
-	grep -v '${DATASET}' README.md                     > README.new
-	echo ""                                           >> README.new
-	echo "## release files for ${DATASET}"            >> README.new
-	echo ""                                           >> README.new
+	grep -v '${DATASET}' README.md | awk -v RS='\n\n\n' 1  > README.new
+	echo ""                                               >> README.new
+	echo "## release files for ${DATASET}"                >> README.new
+	echo ""                                               >> README.new
 	for f in `find ${DATASET}/translated -name 'README.md' | sort`; do \
-	  echo "* [$$f]($$f)"                             >> README.new; \
+	  echo "* [$$f]($$f)"                                 >> README.new; \
 	done
 	mv README.md README.$(shell date +%F)
 	mv README.new README.md
@@ -813,11 +813,10 @@ endif
 	   fi \
 	done
 	@echo ""                                          >> $@
-	@echo ""                                          >> $@
 	@echo "## Example translations"                   >> $@
 	@echo ""                                          >> $@
 	@for d in $(notdir ${FINEWEB_TRANS_RELEASE_EXAMPLE}); do \
-	   if [ -e $(dir ${FINEWEB_TRANS_RELEASE_EXAMPLE})$$d ]; then \
+	   if [ -e ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/$$d ]; then \
 	     echo "* [$$d]($$d)"                          >> $@; \
 	   fi \
 	done
