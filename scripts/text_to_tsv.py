@@ -92,6 +92,6 @@ with gzip.open(args.jsonl_file,'rt') as j:
                 document['translation'] = "\n".join(translations)
                 document['language'] = lang
                 
-                tsv_output.writerow([document['text'],document['translation']])
+                tsv_output.writerow([document['text'].replace("\n",'<br/>'),document['translation'].replace("\n",'<br/>')])
 
                     

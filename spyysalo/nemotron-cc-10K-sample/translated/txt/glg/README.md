@@ -1,4 +1,4 @@
-# fineweb-edu translated into glg
+# spyysalo/nemotron-cc-10K-sample translated into glg
 
 * translation model: Tatoeba-MT-models/deu+eng+fra+por+spa-itc/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30
 * model URL: https://object.pouta.csc.fi/Tatoeba-MT-models/deu+eng+fra+por+spa-itc/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30.zip
@@ -6,9 +6,10 @@
 
 ## release files
 
+Translated documents in parquet:
+* [spyysalo/nemotron-cc-10K-sample/translated/jsonl/glg/nemotron-cc-10K-sample-00000.parquet](https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/glg/nemotron-cc-10K-sample-00000.parquet)
 Translated documents in JSONL:
-* [spyysalo/nemotron-cc-10K-sample/translated/jsonl/glg/nemotron-cc-10K-sample-00000.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/glg/nemotron-cc-10K-sample-00000.jsonl.gz):   50000 46745018
-
+* [spyysalo/nemotron-cc-10K-sample/translated/jsonl/glg/nemotron-cc-10K-sample-00000.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/glg/nemotron-cc-10K-sample-00000.jsonl.gz)
 Translations in plain text format:
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/glg/nemotron-cc-10K-sample-00000.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/glg/nemotron-cc-10K-sample-00000.txt.gz): 1929312 29344792
 
