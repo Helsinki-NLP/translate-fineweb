@@ -73,7 +73,10 @@ OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 		lav lit slk nld dan ell est fra \
 		hrv hun ita pol por ron \
 		slv eus bos isl kat \
-		mkd sqi srp
+		mkd als srp_Cyrl
+
+# sqi = als in FLORES200
+# lav = lvs in FLORES200 (not on dashboard?)
 
 nemotron10K:
 	for l in ${OELLM_LANGS}; do \
@@ -147,7 +150,7 @@ upload:
 	swift list OELLM-synthetic --prefix ${DATASET}/translated/ \
 	| sed 's#^#* ${STORAGE_URL}#' > data/$(subst /,-,${DATASET}).md
 	grep -v "${DATASET}/.*/README.md" README.md        > README.new
-	for f in `find ${DATASET}/translated -name 'README.md'`; do \
+	for f in `find ${DATASET}/translated -name 'README.md' | sort`; do \
 	  echo "* [$$f]($$f)"                             >> README.new; \
 	done
 	mv README.md README.$(shell date +%F)
@@ -195,6 +198,10 @@ translate-jobtest:
 translate-jobtest4:
 	${MAKE} GPUJOB_HPC_MEM=64g GPUJOB_HPC_CORES=8 NR_GPUS=4 MARIAN_GPUS='0 1 2 3' HPC_TIME=30 HPC_GPUQUEUE=dev-g translate-first.${TRANSLATE_JOB_TYPE}
 
+
+.PHONY: release-job
+release-job:
+	${MAKE} HPC_MEM=64g HPC_CORES=32 release-data.submitcpu
 
 
 
@@ -261,6 +268,10 @@ DASHBOARD_TESTSET := flores200-devtest
 DASHBOARD_METRIC  := bleu
 DASHBOARD_URL     := https://opus.nlpl.eu/dashboard/api.php
 STORAGE_HOME      := https://object.pouta.csc.fi
+
+ifeq (${TRG},lav)
+  DASHBOARD_TESTSET := flores101-devtest
+endif
 
 best-opusmt-model = $(shell \
 	wget -qq -O - '${DASHBOARD_URL}?pkg=opusmt&model=all&test=${3}&scoreslang=${1}-${2}&src=${1}&trg=${2}&metric=${4}' \
@@ -687,23 +698,29 @@ ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
 ##---------------------------------------
 
 
-${FINEWEB_TRANS_RELEASE_TRG}: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%: ${FINEWEB_TRANS_DIR}/%
-	@(echo "check output length for $<"; \
-	  i=`gzip -cd $(<:.txt.gz=.input.gz) | wc -l`; \
-	  o=`gzip -cd $< | wc -l`; \
-	  if [ $$i -eq $$o ]; then \
-	    echo "- translations are complete"; \
-	    t=`gzip -cd $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT_DIR}/%,$<) | wc -l`; \
-	    if [ $$o -eq $$t ]; then \
-	      echo "- translation has the same length as original text data"; \
-	      mkdir -p $(dir $@); \
-	      rsync $< $@; \
-	    else \
-	      echo "- different lengths ($$t != $$o) for $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT_DIR}/%,$<) and $<"; \
-	    fi \
-	  else \
-	      echo "- incompletet translations ($$i != $$o) for $(<:.txt.gz=.input.gz) and $<"; \
-	  fi )
+${FINEWEB_TRANS_RELEASE_TRG}: # ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%: ${FINEWEB_TRANS_DIR}/%
+	@( O=$(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_TRANS_DIR}/%.txt.gz,$@); \
+	   I=$(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_TRANS_DIR}/%.input.gz,$@); \
+	   T=$(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_TXT_DIR}/%.txt.gz,$@); \
+	   if [ -e $$I ] && [ -e $$O ] && [ -e $$T ]; then \
+	     echo "check output length for $$O"; \
+	     i=`gzip -cd $$I | wc -l`; \
+	     o=`gzip -cd $$O | wc -l`; \
+	     if [ $$i -eq $$o ]; then \
+	       echo "- translations are complete ($(notdir $@))"; \
+	       t=`gzip -cd $$T | wc -l`; \
+	       if [ $$o -eq $$t ]; then \
+	         echo "- translations in $(notdir $@) have the same length as original text data"; \
+	         mkdir -p $(dir $@); \
+	         rsync $$O $@; \
+	       else \
+	         echo "- different lengths ($$t != $$o) for $$T and $$O"; \
+	       fi \
+	     else \
+	         echo "- incomplete translations ($$i != $$o) for $$I and $$O"; \
+	     fi \
+	   fi )
+
 
 ${FINEWEB_TRANS_RELEASE_SRC}: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/%: ${FINEWEB_TXT_DIR}/%
 	mkdir -p $(dir $@)
@@ -715,7 +732,7 @@ ${FINEWEB_TRANS_RELEASE_SRC}: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/%: ${FINEW
 
 ${FINEWEB_TRANS_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.gz: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz
 	if [ -e $< ]; then \
-	  mkdir -p $(dir $@)
+	  mkdir -p $(dir $@); \
 	  python3 scripts/merge.py \
 		-j $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$<) \
 		-s $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_TXT_DIR}/%.txt.gz,$<) \

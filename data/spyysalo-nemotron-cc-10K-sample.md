@@ -1,3 +1,4 @@
+* https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/als/nemotron-cc-10K-sample-00000.jsonl.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/bos/nemotron-cc-10K-sample-00000.jsonl.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/bul/nemotron-cc-10K-sample-00000.jsonl.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/cat/nemotron-cc-10K-sample-00000.jsonl.gz
@@ -28,9 +29,12 @@
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/slk/nemotron-cc-10K-sample-00000.jsonl.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/slv/nemotron-cc-10K-sample-00000.jsonl.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/spa/nemotron-cc-10K-sample-00000.jsonl.gz
+* https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/srp_Cyrl/nemotron-cc-10K-sample-00000.jsonl.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/swe/nemotron-cc-10K-sample-00000.jsonl.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/tur/nemotron-cc-10K-sample-00000.jsonl.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/jsonl/ukr/nemotron-cc-10K-sample-00000.jsonl.gz
+* https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/als/README.md
+* https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/als/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/bos/README.md
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/bos/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/bul/README.md
@@ -60,6 +64,7 @@
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/glg/README.md
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/glg/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/hrv/README.md
+* https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/hrv/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/hun/README.md
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/hun/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/isl/README.md
@@ -71,6 +76,7 @@
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/lit/README.md
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/lit/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/mkd/README.md
+* https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/mkd/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/mlt/README.md
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/mlt/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/nld/README.md
@@ -80,6 +86,7 @@
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/nob/README.md
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/nob/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/pol/README.md
+* https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/pol/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/por/README.md
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/por/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/ron/README.md
@@ -87,8 +94,11 @@
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/slk/README.md
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/slk/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/slv/README.md
+* https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/slv/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/spa/README.md
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/spa/nemotron-cc-10K-sample-00000.txt.gz
+* https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/srp_Cyrl/README.md
+* https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/srp_Cyrl/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/swe/README.md
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/swe/nemotron-cc-10K-sample-00000.txt.gz
 * https://object.pouta.csc.fi/OELLM-synthetic/spyysalo/nemotron-cc-10K-sample/translated/txt/tur/README.md
