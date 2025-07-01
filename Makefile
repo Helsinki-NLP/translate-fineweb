@@ -145,7 +145,8 @@ all: translate
 
 .PHONY: upload
 upload:
-	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated
+	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/txt/${TRG}
+	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/jsonl/${TRG}
 	mkdir -p data
 	swift list OELLM-synthetic --prefix ${DATASET}/translated/ \
 	| sed 's#^#* ${STORAGE_URL}#' > data/$(subst /,-,${DATASET}).md
