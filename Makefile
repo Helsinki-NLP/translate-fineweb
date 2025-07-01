@@ -391,6 +391,19 @@ release-data: 	${FINEWEB_TRANS_RELEASE_SRC} ${FINEWEB_TRANS_RELEASE_TRG} \
 		${FINEWEB_TRANS_RELEASE_EXAMPLE}
 	${MAKE} ${FINEWEB_TRANS_RELEASE_INFO}
 
+.PHONY: release-txtdata
+release-txtdata: ${FINEWEB_TRANS_RELEASE_SRC} ${FINEWEB_TRANS_RELEASE_TRG}
+
+.PHONY: release-json
+release-json: ${FINEWEB_TRANS_RELEASE_JSON}
+
+.PHONY: release-parquet
+release-json: ${FINEWEB_TRANS_RELEASE_PARQUET}
+
+.PHONY: examples
+examples: ${FINEWEB_TRANS_RELEASE_EXAMPLE}
+
+
 .PHONY: release-first
 release-first:  $(firstword ${FINEWEB_TRANS_RELEASE_SRC}) \
 		$(firstword ${FINEWEB_TRANS_RELEASE_TRG}) \
