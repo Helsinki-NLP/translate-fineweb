@@ -73,7 +73,7 @@ OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 		lav lit slk nld dan ell est fra \
 		hrv hun ita pol por ron \
 		slv eus bos isl kat \
-		mkd als srp_Cyrl
+		mkd sqi srp_Cyrl
 
 # sqi = als in FLORES200
 # lav = lvs in FLORES200 (not on dashboard?)
@@ -275,6 +275,11 @@ STORAGE_HOME      := https://object.pouta.csc.fi
 ifeq (${TRG},lav)
   DASHBOARD_TESTSET := flores101-devtest
 endif
+
+ifeq (${TRG},sqi)
+  DASHBOARD_TESTSET := ntrex128
+endif
+
 
 best-opusmt-model = $(shell \
 	wget -qq -O - '${DASHBOARD_URL}?pkg=opusmt&model=all&test=${3}&scoreslang=${1}-${2}&src=${1}&trg=${2}&metric=${4}' \
