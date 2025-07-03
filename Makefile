@@ -1,3 +1,32 @@
+#
+# makefile for translating LLM pre-training data
+#
+#-------------------------------------------------------------------------
+# workflow:
+#
+# submit jobs via SLURM (manually, one after the other has finished)
+# TODO: add dependencies between jobs
+#
+#    make TRG=xxx prepare-job
+#    make TRG=xxx translate-jobs
+#    make TRG=xxx release-job
+#
+#
+# upload data to allas (use project 2005815)
+#
+#    module load allas
+#    allas-conf
+#    make TRG=xxx upload
+#
+#
+# commit changes to GitHub repo
+#-------------------------------------------------------------------------
+# other variables:
+#
+#   DATASET .......... path to json-files with original data
+#   SENTENCE_SPLIT ... set to 1 in order to split into sentences
+#-------------------------------------------------------------------------
+
 
 PWD      := ${shell pwd}
 REPOHOME := ${PWD}/
@@ -160,7 +189,7 @@ upload:
 	mv README.md README.$(shell date +%F)
 	mv README.new README.md
 	git add data/$(subst /,-,${DATASET}).md
-	find ${DATASET}/translated -name '*.md' | xargs git add
+	find ${DATASET}/translated/txt/${TRG} -name '*.md' | xargs git add
 
 
 #	grep -v '${FINEWEB_TRANS_RELEASE_INFO}' README.md                        > README.new
