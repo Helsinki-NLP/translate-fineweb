@@ -45,10 +45,12 @@ Links are availabe from [README-2024-06-26.md](README-2024-06-26.md)
 
 
 
+
 ## release files for fineweb-edu/350BT
 
 * [fineweb-edu/350BT/translated/txt/deu/README.md](fineweb-edu/350BT/translated/txt/deu/README.md)
 * [fineweb-edu/350BT/translated/txt/fin/README.md](fineweb-edu/350BT/translated/txt/fin/README.md)
+* [fineweb-edu/350BT/translated/txt/gle/README.md](fineweb-edu/350BT/translated/txt/gle/README.md)
 * [fineweb-edu/350BT/translated/txt/nno/README.md](fineweb-edu/350BT/translated/txt/nno/README.md)
 * [fineweb-edu/350BT/translated/txt/nob/README.md](fineweb-edu/350BT/translated/txt/nob/README.md)
 * [fineweb-edu/350BT/translated/txt/spa/README.md](fineweb-edu/350BT/translated/txt/spa/README.md)
