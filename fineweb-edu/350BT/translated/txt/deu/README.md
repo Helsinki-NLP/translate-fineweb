@@ -13,6 +13,7 @@ Translated documents in parquet:
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00003.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00003.parquet)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00004.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00004.parquet)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00005.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00005.parquet)
+* [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00006.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00006.parquet)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00007.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00007.parquet)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00008.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00008.parquet)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00009.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00009.parquet)
@@ -46,6 +47,7 @@ Translated documents in parquet:
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00037.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00037.parquet)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00038.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00038.parquet)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00039.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00039.parquet)
+* [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00040.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00040.parquet)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00041.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00041.parquet)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00042.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00042.parquet)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00043.parquet](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00043.parquet)
@@ -62,6 +64,7 @@ Translated documents in JSONL:
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00003.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00003.jsonl.gz)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00004.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00004.jsonl.gz)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00005.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00005.jsonl.gz)
+* [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00006.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00006.jsonl.gz)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00007.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00007.jsonl.gz)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00008.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00008.jsonl.gz)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00009.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00009.jsonl.gz)
@@ -95,6 +98,7 @@ Translated documents in JSONL:
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00037.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00037.jsonl.gz)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00038.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00038.jsonl.gz)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00039.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00039.jsonl.gz)
+* [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00040.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00040.jsonl.gz)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00041.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00041.jsonl.gz)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00042.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00042.jsonl.gz)
 * [fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00043.jsonl.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/jsonl/deu/fineweb-edu_350BT_00043.jsonl.gz)
@@ -111,6 +115,7 @@ Translations in plain text format:
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00003.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00003.txt.gz): 23682972 539656360
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00004.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00004.txt.gz): 23686552 539534410
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00005.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00005.txt.gz): 23723466 539516959
+* [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00006.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00006.txt.gz): 23740867 540266487
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00007.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00007.txt.gz): 23717569 539319551
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00008.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00008.txt.gz): 23749086 539868709
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00009.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00009.txt.gz): 23733764 539285308
@@ -144,6 +149,7 @@ Translations in plain text format:
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00037.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00037.txt.gz): 23721036 540363249
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00038.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00038.txt.gz): 23763666 540494014
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00039.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00039.txt.gz): 23751098 540544629
+* [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00040.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00040.txt.gz): 23774768 540210701
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00041.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00041.txt.gz): 23771416 540650938
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00042.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00042.txt.gz): 23743688 540871699
 * [fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00043.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/deu/fineweb-edu_350BT_00043.txt.gz): 23695033 540140143
@@ -205,7 +211,6 @@ Original data in plain text format:
 * [fineweb-edu/350BT/translated/txt/eng/fineweb-edu_350BT_00048.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/eng/fineweb-edu_350BT_00048.txt.gz): 23627873 562526756
 * [fineweb-edu/350BT/translated/txt/eng/fineweb-edu_350BT_00049.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/eng/fineweb-edu_350BT_00049.txt.gz): 23660885 563183344
 
-
 ## Example translations
 
 * [fineweb-edu_350BT_00000.md](fineweb-edu_350BT_00000.md)
@@ -214,6 +219,7 @@ Original data in plain text format:
 * [fineweb-edu_350BT_00003.md](fineweb-edu_350BT_00003.md)
 * [fineweb-edu_350BT_00004.md](fineweb-edu_350BT_00004.md)
 * [fineweb-edu_350BT_00005.md](fineweb-edu_350BT_00005.md)
+* [fineweb-edu_350BT_00006.md](fineweb-edu_350BT_00006.md)
 * [fineweb-edu_350BT_00007.md](fineweb-edu_350BT_00007.md)
 * [fineweb-edu_350BT_00008.md](fineweb-edu_350BT_00008.md)
 * [fineweb-edu_350BT_00009.md](fineweb-edu_350BT_00009.md)
@@ -247,6 +253,7 @@ Original data in plain text format:
 * [fineweb-edu_350BT_00037.md](fineweb-edu_350BT_00037.md)
 * [fineweb-edu_350BT_00038.md](fineweb-edu_350BT_00038.md)
 * [fineweb-edu_350BT_00039.md](fineweb-edu_350BT_00039.md)
+* [fineweb-edu_350BT_00040.md](fineweb-edu_350BT_00040.md)
 * [fineweb-edu_350BT_00041.md](fineweb-edu_350BT_00041.md)
 * [fineweb-edu_350BT_00042.md](fineweb-edu_350BT_00042.md)
 * [fineweb-edu_350BT_00043.md](fineweb-edu_350BT_00043.md)
@@ -255,4 +262,3 @@ Original data in plain text format:
 * [fineweb-edu_350BT_00046.md](fineweb-edu_350BT_00046.md)
 * [fineweb-edu_350BT_00048.md](fineweb-edu_350BT_00048.md)
 * [fineweb-edu_350BT_00049.md](fineweb-edu_350BT_00049.md)
-
