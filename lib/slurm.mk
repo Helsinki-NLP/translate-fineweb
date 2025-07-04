@@ -42,7 +42,6 @@ GPUJOB_HPC_TIME    ?= ${HPC_TIME}
 	  sleep 1; \
 	done
 	mkdir -p $(dir $@)
-	mkdir -p ${TMPDIR} ${TMPWORKDIR}
 	echo '#!/bin/bash -l' > $@
 	echo '#SBATCH -J "$(SLURM_JOBNAME)${@:.submit=}"' >>$@
 	echo '#SBATCH -o $(SLURM_JOBNAME)${@:.submit=}.out.%j' >> $@

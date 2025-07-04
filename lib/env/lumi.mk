@@ -33,14 +33,14 @@ TRANSLATE_JOB_TYPE := submit
 # CPU_PROJECT   = project_462000688
 
 ## HPLT-bitexting-2
-CSCPROJECT    = project_462000764
-GPU_PROJECT   = project_462000764
-CPU_PROJECT   = project_462000764
+# CSCPROJECT    = project_462000764
+# GPU_PROJECT   = project_462000764
+# CPU_PROJECT   = project_462000764
 
 ## MaMuLaM
-# CSCROJECT     = project_462000964
-# GPU_PROJECT   = project_462000964
-# CPU_PROJECT   = project_462000964
+CSCPROJECT    = project_462000964
+GPU_PROJECT   = project_462000964
+CPU_PROJECT   = project_462000964
 
 
 HPC_QUEUE     = small
@@ -63,6 +63,7 @@ ifdef LOCAL_SCRATCH
   TMPWORKDIR  := ${LOCAL_SCRATCH}
 else
   TMPDIR     := /scratch/${CSCPROJECT}/tmp
+  # TMPDIR   := /scratch/${CSCPROJECT}
   TMPWORKDIR := ${TMPDIR}
 endif
 

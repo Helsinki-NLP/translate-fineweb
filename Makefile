@@ -88,7 +88,6 @@ FINEWEB_TXT     := $(sort \
 
 
 
-
 ## run targets for nemotron10K
 ## NOTE: sentence splitting is activated!
 
@@ -642,6 +641,7 @@ endif
 
 ${FINEWEB_TRANS}: %.txt.gz: %.input.gz
 	${MAKE} prepare-model
+	if [ ! -e ${TMPDIR} ]; then mkdir -p ${TMPDIR}; fi
 	${LOAD_ENV} && cd ${LANGPAIR}/${MODELNAME} && ${MARIAN_DECODER} \
 		-i ${PWD}/$< \
 		-c decoder.yml \
@@ -651,6 +651,7 @@ ${FINEWEB_TRANS}: %.txt.gz: %.input.gz
 
 ${FINEWEB_INT8}: %.int8.gz: %.input.gz
 	${MAKE} prepare-model
+	if [ ! -e ${TMPDIR} ]; then mkdir -p ${TMPDIR}; fi
 	${LOAD_ENV} && cd ${LANGPAIR}/${MODELNAME} && ${MARIAN_DECODER} \
 		-i ${PWD}/$< \
 		-c decoder-int8.yml \
@@ -663,6 +664,7 @@ ${FINEWEB_INT8}: %.int8.gz: %.input.gz
 
 ${FINEWEB_MISSING_TRANS}: %.translated.gz: %.input.gz
 	${MAKE} prepare-model
+	if [ ! -e ${TMPDIR} ]; then mkdir -p ${TMPDIR}; fi
 	${LOAD_ENV} && cd ${LANGPAIR}/${MODELNAME} && ${MARIAN_DECODER} \
 		-i ${PWD}/$< \
 		-c decoder.yml \
