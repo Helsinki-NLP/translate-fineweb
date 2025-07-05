@@ -130,6 +130,11 @@ fineweb-translate:
 	  ${MAKE} TRG=$$l translate-jobs; \
 	done
 
+fineweb-translate2:
+	for l in ces swe; do \
+	  ${MAKE} TRG=$$l translate-jobs; \
+	done
+
 
 ## new version of text extraction
 ## (OBSOLETE)
