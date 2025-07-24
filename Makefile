@@ -106,6 +106,30 @@ OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 # sqi = als in FLORES200
 # lav = lvs in FLORES200 (not on dashboard?)
 
+.PHONY: fineweb-releases-job
+fineweb-releases-job:
+	${MAKE} HPC_MEM=64g HPC_CORES=32 fineweb-releases.submitcpu
+
+.PHONY: fineweb-releases
+fineweb-releases:
+	for l in deu fin nob nno spa mlt ukr \
+		gle glg cat ces swe tur bul \
+		lav lit slk nld dan ell est fra \
+		hrv hun ita pol por ron slv eus; do \
+	  ${MAKE} TRG=$$l release-data; \
+	done
+
+.PHONY: fineweb-upload
+fineweb-upload:
+	for l in deu fin nob nno spa mlt ukr \
+		gle glg cat ces swe tur bul \
+		lav lit slk nld dan ell est fra \
+		hrv hun ita pol por ron slv eus; do \
+	  ${MAKE} TRG=$$l upload; \
+	done
+
+
+
 nemotron10K:
 	for l in ${OELLM_LANGS}; do \
 	  ${MAKE} TRG=$$l prepare_nemotron10K; \

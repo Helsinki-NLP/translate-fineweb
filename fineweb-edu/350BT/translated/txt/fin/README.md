@@ -214,7 +214,6 @@ Original data in plain text format:
 * [fineweb-edu/350BT/translated/txt/eng/fineweb-edu_350BT_00048.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/eng/fineweb-edu_350BT_00048.txt.gz): 23627873 562526756
 * [fineweb-edu/350BT/translated/txt/eng/fineweb-edu_350BT_00049.txt.gz](https://object.pouta.csc.fi/OELLM-synthetic/fineweb-edu/350BT/translated/txt/eng/fineweb-edu_350BT_00049.txt.gz): 23660885 563183344
 
-
 ## Example translations
 
 * [fineweb-edu_350BT_00000.md](fineweb-edu_350BT_00000.md)
