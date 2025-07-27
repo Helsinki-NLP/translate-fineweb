@@ -6,6 +6,7 @@ toolwrapper>=0.4.1
 loomchild-segment
 sentencepiece
 ctranslate2
+langcodes
 # mosestokenizer
 # nvidia-cublas-cu12
 # nvidia-cudnn-cu12

@@ -54,6 +54,12 @@ TRG ?= deu
 LANGPAIR := ${SRC}-${TRG}
 
 
+## two-letter language codes (for OPUS)
+
+SRC2 := $(shell iso639 -2 -k ${SRC})
+TRG2 := $(shell iso639 -2 -k ${TRG})
+LANGPAIR2 := ${SRC2}-${TRG2}
+
 ## maximum input length (number sentence piece segments)
 
 MARIAN_MAX_LENGTH := 512
@@ -88,13 +94,6 @@ FINEWEB_TXT     := $(sort \
 
 
 
-## run targets for nemotron10K
-## NOTE: sentence splitting is activated!
-
-.PHONY: %_nemotron10K
-%_nemotron10K:
-	${MAKE} SENTENCE_SPLIT=1 DATASET=spyysalo/nemotron-cc-10K-sample $(@:_nemotron10K=)
-
 
 OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 		gle glg cat ces swe tur bul \
@@ -106,28 +105,14 @@ OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 # sqi = als in FLORES200
 # lav = lvs in FLORES200 (not on dashboard?)
 
-.PHONY: fineweb-releases-job
-fineweb-releases-job:
-	${MAKE} HPC_MEM=64g HPC_CORES=32 fineweb-releases.submitcpu
 
-.PHONY: fineweb-releases
-fineweb-releases:
-	for l in deu fin nob nno spa mlt ukr \
-		gle glg cat ces swe tur bul \
-		lav lit slk nld dan ell est fra \
-		hrv hun ita pol por ron slv eus; do \
-	  ${MAKE} TRG=$$l release-data; \
-	done
 
-.PHONY: fineweb-upload
-fineweb-upload:
-	for l in deu fin nob nno spa mlt ukr \
-		gle glg cat ces swe tur bul \
-		lav lit slk nld dan ell est fra \
-		hrv hun ita pol por ron slv eus; do \
-	  ${MAKE} TRG=$$l upload; \
-	done
+## run targets for nemotron10K
+## NOTE: sentence splitting is activated!
 
+.PHONY: %_nemotron10K
+%_nemotron10K:
+	${MAKE} SENTENCE_SPLIT=1 DATASET=spyysalo/nemotron-cc-10K-sample $(@:_nemotron10K=)
 
 
 nemotron10K:
@@ -142,6 +127,12 @@ nemotron10K-release:
 	for l in ${OELLM_LANGS}; do \
 	  ${MAKE} TRG=$$l release-data_nemotron10K; \
 	done
+
+nemotron10K-opus:
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l opus_nemotron10K; \
+	done
+
 
 
 fineweb-prepare:
@@ -158,6 +149,33 @@ fineweb-translate2:
 	for l in ces swe; do \
 	  ${MAKE} TRG=$$l translate-jobs; \
 	done
+
+.PHONY: fineweb-releases-job
+fineweb-releases-job:
+	${MAKE} HPC_MEM=64g HPC_CORES=32 fineweb-releases.submitcpu
+
+.PHONY: fineweb-releases
+fineweb-releases:
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l release-data; \
+	done
+
+.PHONY: fineweb-upload
+fineweb-upload:
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l upload; \
+	done
+
+
+.PHONY: fineweb-find-missing
+fineweb-find-missing:
+	@for l in ${OELLM_LANGS}; do \
+	  ${MAKE} -s TRG=$$l find-missing-release-files; \
+	done
+
+
+de.ids:
+	python3 scripts/text_to_xml.py > de.ids
 
 
 ## new version of text extraction
@@ -202,6 +220,7 @@ all: translate
 
 .PHONY: upload
 upload:
+	which a-put
 	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/txt/${TRG}
 	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/jsonl/${TRG}
 	mkdir -p data
@@ -224,6 +243,11 @@ upload:
 #	echo '* [${FINEWEB_TRANS_RELEASE_INFO}](${FINEWEB_TRANS_RELEASE_INFO})' >> README.new
 #	mv README.md README.$(shell date +%F)
 #	mv README.new README.md
+
+
+upload-original:
+	which a-put
+	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/jsonl/${SRC}/*.parquet
 
 
 
@@ -264,6 +288,40 @@ translate-jobtest4:
 release-job:
 	${MAKE} HPC_MEM=64g HPC_CORES=32 release-data.submitcpu
 
+
+
+## find missing release files (for which translations exist)
+
+.PHONY: find-missing-release-files
+find-missing-release-files:
+	@for f in $(notdir ${FINEWEB_TRANS_RELEASE_TRG}); do \
+	  if [ -e ${FINEWEB_TRANS_DIR}/$$f ]; then \
+	    if [ ! -e ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/$$f ]; then \
+	      echo "missing release file: ${TRG}/$$f"; \
+	    fi \
+	  fi \
+	done
+
+## find missing release files
+## move them to a new directory (unreleased)
+## and submit a new translation job
+##
+## NOTE: Don't do this when translation jobs are still running and
+##       translated files are not released yet!
+##       The target only checks whether a release file exists or not
+
+.PHONY: translate-missing-release-files
+translate-missing-release-files:
+	@for f in $(notdir ${FINEWEB_TRANS_RELEASE_TRG}); do \
+	  if [ -e ${FINEWEB_TRANS_DIR}/$$f ]; then \
+	    if [ ! -e ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/$$f ]; then \
+	      echo "missing release file: ${TRG}/$$f"; \
+	      mkdir -p ${FINEWEB_UNRELEASED_DIR}; \
+	      mv ${FINEWEB_TRANS_DIR}/$$f* ${FINEWEB_UNRELEASED_DIR}/; \
+	      ${MAKE} ${FINEWEB_TRANS_DIR}/$$f-job; \
+	    fi \
+	  fi \
+	done
 
 
 
@@ -382,10 +440,10 @@ FINEWEB_TRANS_JOBS := $(addsuffix -job,${FINEWEB_TRANS})
 
 ## in case of broken translation jobs: missing translations are created here
 
-FINEWEB_MISSING_DIR   := ${DATASET}/missing/${LANGPAIR}/${MODELNAME}
-FINEWEB_MISSING_INPUT := $(wildcard ${FINEWEB_MISSING_DIR}/*.input.gz)
-FINEWEB_MISSING_TRANS := $(patsubst %.input.gz,%.translated.gz,$(FINEWEB_MISSING_INPUT))
-
+FINEWEB_MISSING_DIR    := ${DATASET}/missing/${LANGPAIR}/${MODELNAME}
+FINEWEB_UNRELEASED_DIR := ${DATASET}/unreleased/${LANGPAIR}/${MODELNAME}
+FINEWEB_MISSING_INPUT  := $(wildcard ${FINEWEB_MISSING_DIR}/*.input.gz)
+FINEWEB_MISSING_TRANS  := $(patsubst %.input.gz,%.translated.gz,$(FINEWEB_MISSING_INPUT))
 
 ## release data (which is parallel and completely translated
 
@@ -396,6 +454,20 @@ FINEWEB_TRANS_RELEASE_JSON := $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB
 FINEWEB_TRANS_RELEASE_PARQUET := $(patsubst %.jsonl.gz,%.parquet,${FINEWEB_TRANS_RELEASE_JSON})
 FINEWEB_TRANS_RELEASE_EXAMPLE := $(patsubst %.txt.gz,%.md,${FINEWEB_TRANS_RELEASE_TRG})
 FINEWEB_TRANS_RELEASE_INFO := ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/README.md
+
+FINEWEB_ORIG_RELEASE_JSON    := $(patsubst %.gz,${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${SRC}/%.gz,${FINEWEB_JSONL})
+FINEWEB_ORIG_RELEASE_PARQUET := $(patsubst %.jsonl.gz,%.parquet,${FINEWEB_ORIG_RELEASE_JSON})
+
+
+## OPUS files
+
+FINEWEB_OPUS_DIR := ${DATASET}/opus
+FINEWEB_OPUS_SRC := $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_OPUS_DIR}/raw/${SRC}/%.zip,${FINEWEB_TXT})
+FINEWEB_OPUS_TRG := $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_OPUS_DIR}/raw/${TRG}/%.zip,${FINEWEB_TXT})
+FINEWEB_OPUS_ALG := $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_OPUS_DIR}/xml/${SRC2}-${TRG2}/%.xml.gz,${FINEWEB_TXT})
+
+FINEWEB_OPUS_SRCALL := ${FINEWEB_OPUS_DIR}/raw/${SRC2}.zip
+FINEWEB_OPUS_TRGALL := ${FINEWEB_OPUS_DIR}/raw/${TRG2}.zip
 
 
 ## translation targets for quantized models
@@ -444,7 +516,7 @@ ${FINEWEB_INT8_JOBS}:
 
 .PHONY: release-data
 release-data: 	${FINEWEB_TRANS_RELEASE_SRC} ${FINEWEB_TRANS_RELEASE_TRG} \
-		${FINEWEB_TRANS_RELEASE_JSON} ${FINEWEB_TRANS_RELEASE_PARQUET} \
+		${FINEWEB_TRANS_RELEASE_JSON} ${FINEWEB_TRANS_RELEASE_PARQUET} ${FINEWEB_ORIG_RELEASE_PARQUET} \
 		${FINEWEB_TRANS_RELEASE_EXAMPLE}
 	${MAKE} ${FINEWEB_TRANS_RELEASE_INFO}
 
@@ -455,7 +527,10 @@ release-txtdata: ${FINEWEB_TRANS_RELEASE_SRC} ${FINEWEB_TRANS_RELEASE_TRG}
 release-json: ${FINEWEB_TRANS_RELEASE_JSON}
 
 .PHONY: release-parquet
-release-json: ${FINEWEB_TRANS_RELEASE_PARQUET}
+release-parquet: ${FINEWEB_TRANS_RELEASE_PARQUET} ${FINEWEB_ORIG_RELEASE_PARQUET}
+
+.PHONY: release-original-parquet
+release-original-parquet: ${FINEWEB_ORIG_RELEASE_PARQUET}
 
 .PHONY: examples
 examples: ${FINEWEB_TRANS_RELEASE_EXAMPLE}
@@ -465,6 +540,13 @@ examples: ${FINEWEB_TRANS_RELEASE_EXAMPLE}
 release-first:  $(firstword ${FINEWEB_TRANS_RELEASE_SRC}) \
 		$(firstword ${FINEWEB_TRANS_RELEASE_TRG}) \
 		$(firstword ${FINEWEB_TRANS_RELEASE_JSON})
+
+
+
+## convert to OPUS XML
+
+.PHONY: opus
+opus: ${FINEWEB_OPUS_SRCALL} ${FINEWEB_OPUS_TRGALL} ${FINEWEB_OPUS_ALG}
 
 
 
@@ -773,6 +855,32 @@ ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
 
 
 
+## convert to OPUS XML
+
+${FINEWEB_OPUS_SRCALL}: ${FINEWEB_OPUS_SRC}
+	scripts/zipmerge.py $@ $^
+
+${FINEWEB_OPUS_TRGALL}: ${FINEWEB_OPUS_TRG}
+	scripts/zipmerge.py $@ $^
+
+${FINEWEB_OPUS_ALG}: ${FINEWEB_OPUS_DIR}/xml/${SRC2}-${TRG2}/%.xml.gz: ${FINEWEB_OPUS_DIR}/raw/${SRC}/%.zip ${FINEWEB_OPUS_DIR}/raw/${TRG}/%.zip
+	mkdir -p $(dir $@)
+	scripts/sentids_to_xcesalign.py $(patsubst %.zip,%.ids.gz,$^) | gzip -c > $@
+
+${FINEWEB_OPUS_TRG} ${FINEWEB_OPUS_SRC}: ${FINEWEB_OPUS_DIR}/raw/%.zip: ${FINEWEB_TRANS_RELEASE_DIR}/txt/%.txt.gz
+	if [ -e $< ]; then \
+	  mkdir -p $(dir $@); \
+	  python3 scripts/text_to_xml.py \
+		-j ${FINEWEB_DIR}/$(notdir $(<:.txt.gz=.jsonl.gz)) \
+		-s ${FINEWEB_TXT_DIR}/$(notdir $<) \
+		-t $< \
+		-l $(patsubst ${FINEWEB_OPUS_DIR}/raw/%/,%,$(dir $@)) \
+		-o $@ \
+		-d ${DATASET}/$(notdir $(@:.zip=)) \
+	  | gzip -c > $(@:.zip=.ids.gz); \
+	fi
+
+
 ##---------------------------------------
 ## create release-data
 ## - check length (compare number of lines in input and output)
@@ -828,6 +936,14 @@ ${FINEWEB_TRANS_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl
 
 #	python3 scripts/merge.py
 
+
+
+## original English data for reference
+
+${FINEWEB_ORIG_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${SRC}/%.gz: ${FINEWEB_DIR}/%.gz
+	mkdir -p $(dir $@)
+	ln -s $< ${PWD}/$@
+
 %.parquet: %.jsonl.gz
 	if [ -e $< ]; then \
 	  ${PYTHONENV} python scripts/jsonl_to_parquet.py -i $< -o $@; \
@@ -862,6 +978,13 @@ endif
 	@echo ""                                          >> $@
 	@echo "Translated documents in parquet:"          >> $@
 	@for d in ${FINEWEB_TRANS_RELEASE_PARQUET}; do \
+	   if [ -e $$d ]; then \
+	     echo "* [$$d](${STORAGE_URL}$$d)"            >> $@; \
+	   fi \
+	done
+	@echo ""                                          >> $@
+	@echo "Original documents in parquet:"            >> $@
+	@for d in ${FINEWEB_ORIG_RELEASE_PARQUET}; do \
 	   if [ -e $$d ]; then \
 	     echo "* [$$d](${STORAGE_URL}$$d)"            >> $@; \
 	   fi \

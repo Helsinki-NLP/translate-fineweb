@@ -38,7 +38,7 @@ with gzip.open(args.jsonl_file,'rt') as j:
                     try:
                         target_text = t.readline().rstrip()
                     except:
-                        print(f"problems reading from source/target", file=sys.stderr)
+                        print(f"problems reading from translation file", file=sys.stderr)
 
                     ## remove whitespace characters when matching strings
                     textstr = re.sub(r"\s+", "", text, flags=re.UNICODE)
@@ -57,7 +57,7 @@ with gzip.open(args.jsonl_file,'rt') as j:
                             try:
                                 target_text += ' ' + t.readline().rstrip()
                             except:
-                                print(f"problems reading from source/target", file=sys.stderr)
+                                print(f"problems reading from translation file", file=sys.stderr)
                         else:
                             translations.append(target_text)
                             break
@@ -83,7 +83,7 @@ with gzip.open(args.jsonl_file,'rt') as j:
                         try:
                             target_text = t.readline().rstrip()
                         except:
-                            print(f"problems reading from source/target", file=sys.stderr)
+                            print(f"problems reading from translation file", file=sys.stderr)
                         # document['translation'] = "\n".join(translations)
                         # print(document)
                         
