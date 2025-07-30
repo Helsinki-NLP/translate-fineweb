@@ -21,7 +21,8 @@ parser.add_argument('-t', '--target-language-file', help='target language file',
                     default='/users/tiedeman/research/translate-fineweb/fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00000.txt.gz')
 parser.add_argument('-l', '--lang', help='language ID (default=de)', type=str, default='de')
 parser.add_argument('-o', '--output-file', help='output zip-file of all XML documents (default=output.zip', type=str, default='output.zip')
-parser.add_argument('-d', '--base-dir', help='base-dir in output zip file (default=fineweb-edu/350BT/00000)', type=str, default='fineweb-edu/350BT/00000')
+parser.add_argument('-c', '--corpus', help='name of corpus (default=fineweb-edu)', type=str, default='fineweb-edu')
+parser.add_argument('-d', '--base-dir', help='base-dir in output zip file (default=350BT/00000)', type=str, default='350BT/00000')
 args = parser.parse_args()
 
 lang = args.lang
@@ -31,7 +32,13 @@ segmenter = LoomchildSegmenter(lang)
 
 docnr = 0
 basedir = args.base_dir
-outdir = langid + '/' + basedir
+corpus = args.corpus
+
+## required directory structure for OPUS:
+
+doczipdir = corpus + '/raw/' + langid + '/' + basedir
+docalgdir = langid + '/' + basedir
+
 
 with gzip.open(args.jsonl_file,'rt') as j:
     with gzip.open(args.source_language_file,'rt') as s:
@@ -46,8 +53,9 @@ with gzip.open(args.jsonl_file,'rt') as j:
                     # doc = document['text']
                     doc = re.sub("([A-Za-z,;])\n([a-z])", r"\1 \2", document['text'])
                     docnr += 1
-                    docpath = outdir + '/' + str(docnr) + '.xml'
-                    print(f"DOCUMENT {docpath}")
+                    docpath = doczipdir + '/' + str(docnr) + '.xml'
+                    docalgpath = docalgdir + '/' + str(docnr) + '.xml'
+                    print(f"DOCUMENT {docalgpath}")
                     
                     sentid = 0
                 

@@ -75,7 +75,9 @@ SENTENCE_SPLIT := 0
 ## select fineweb shards to be used (start and end, starting with 1)
 
 # DATASET     := spyysalo/nemotron-cc-10K-sample
+# CORPUS      := nemotron-cc-10K-sample
 DATASET       := fineweb-edu/350BT
+CORPUS        := fineweb-edu
 FINEWEB_START := 1
 FINEWEB_END   := 50
 
@@ -112,7 +114,7 @@ OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 
 .PHONY: %_nemotron10K
 %_nemotron10K:
-	${MAKE} SENTENCE_SPLIT=1 DATASET=spyysalo/nemotron-cc-10K-sample $(@:_nemotron10K=)
+	${MAKE} SENTENCE_SPLIT=1 DATASET=spyysalo/nemotron-cc-10K-sample CORPUS=nemotron-cc-10K-sample $(@:_nemotron10K=)
 
 
 nemotron10K:
@@ -173,9 +175,6 @@ fineweb-find-missing:
 	  ${MAKE} -s TRG=$$l find-missing-release-files; \
 	done
 
-
-de.ids:
-	python3 scripts/text_to_xml.py > de.ids
 
 
 ## new version of text extraction
@@ -876,9 +875,13 @@ ${FINEWEB_OPUS_TRG} ${FINEWEB_OPUS_SRC}: ${FINEWEB_OPUS_DIR}/raw/%.zip: ${FINEWE
 		-t $< \
 		-l $(patsubst ${FINEWEB_OPUS_DIR}/raw/%/,%,$(dir $@)) \
 		-o $@ \
-		-d ${DATASET}/$(notdir $(@:.zip=)) \
+		-c ${CORPUS} \
+		-d $(notdir $(@:.zip=)) \
 	  | gzip -c > $(@:.zip=.ids.gz); \
 	fi
+
+##
+#		-d ${DATASET}/$(notdir $(@:.zip=))
 
 
 ##---------------------------------------
