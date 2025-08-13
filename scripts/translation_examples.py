@@ -21,9 +21,9 @@ lang = args.lang
 print("| original | translation |")
 print("|----------|-------------|")
 
-with gzip.open(args.jsonl_file,'rt') as j:
-    with gzip.open(args.source_language_file,'rt') as s:
-        with gzip.open(args.target_language_file,'rt') as t:
+with gzip.open(args.jsonl_file,'rt', encoding='utf-8', errors='replace') as j:
+    with gzip.open(args.source_language_file,'rt', encoding='utf-8', errors='replace') as s:
+        with gzip.open(args.target_language_file,'rt', encoding='utf-8', errors='replace') as t:
 
             for line in j:
                 document = json.loads(line)

@@ -5,6 +5,7 @@ Automatically translated documents from fineweb-edu. Translations are based on [
 
 The translated data sets below are based on some preliminary runs with slightly erroneous segmentation.
 Links are availabe from [README-2024-06-26.md](README-2024-06-26.md)
+
 ## release files for spyysalo/nemotron-cc-10K-sample
 
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/als/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/als/README.md)
@@ -26,6 +27,7 @@ Links are availabe from [README-2024-06-26.md](README-2024-06-26.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/isl/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/isl/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/ita/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/ita/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/kat/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/kat/README.md)
+* [spyysalo/nemotron-cc-10K-sample/translated/txt/lav/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/lav/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/lit/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/lit/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/mkd/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/mkd/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/mlt/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/mlt/README.md)
@@ -38,10 +40,12 @@ Links are availabe from [README-2024-06-26.md](README-2024-06-26.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/slk/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/slk/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/slv/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/slv/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/spa/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/spa/README.md)
+* [spyysalo/nemotron-cc-10K-sample/translated/txt/sqi/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/sqi/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/srp_Cyrl/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/srp_Cyrl/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/swe/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/swe/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/tur/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/tur/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/ukr/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/ukr/README.md)
+
 
 
 

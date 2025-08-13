@@ -40,9 +40,9 @@ doczipdir = corpus + '/raw/' + langid + '/' + basedir
 docalgdir = langid + '/' + basedir
 
 
-with gzip.open(args.jsonl_file,'rt') as j:
-    with gzip.open(args.source_language_file,'rt') as s:
-        with gzip.open(args.target_language_file,'rt') as t:
+with gzip.open(args.jsonl_file,'rt', encoding='utf-8', errors='replace') as j:
+    with gzip.open(args.source_language_file,'rt', encoding='utf-8', errors='replace') as s:
+        with gzip.open(args.target_language_file,'rt', encoding='utf-8', errors='replace') as t:
 
             with ZipFile(args.output_file, 'w', compression=ZIP_DEFLATED, compresslevel=6) as o:
 

@@ -135,6 +135,11 @@ nemotron10K-opus:
 	  ${MAKE} TRG=$$l opus_nemotron10K; \
 	done
 
+nemotron10K-upload:
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l upload_nemotron10K; \
+	done
+
 
 
 fineweb-prepare:
@@ -175,6 +180,11 @@ fineweb-find-missing:
 	  ${MAKE} -s TRG=$$l find-missing-release-files; \
 	done
 
+.PHONY: fineweb-translate-missing
+fineweb-translate-missing:
+	@for l in $(filter-out deu,${OELLM_LANGS}); do \
+	  ${MAKE} -s TRG=$$l translate-missing-release-files; \
+	done
 
 
 ## new version of text extraction
@@ -309,20 +319,25 @@ find-missing-release-files:
 ##       translated files are not released yet!
 ##       The target only checks whether a release file exists or not
 
+##
+## NOTE: very conservative mini-batch settings,
+##       this will slow down things and also reduce GPU utilization
+
 .PHONY: translate-missing-release-files
 translate-missing-release-files:
 	@for f in $(notdir ${FINEWEB_TRANS_RELEASE_TRG}); do \
-	  if [ -e ${FINEWEB_TRANS_DIR}/$$f ]; then \
 	    if [ ! -e ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/$$f ]; then \
 	      echo "missing release file: ${TRG}/$$f"; \
-	      mkdir -p ${FINEWEB_UNRELEASED_DIR}; \
-	      mv ${FINEWEB_TRANS_DIR}/$$f* ${FINEWEB_UNRELEASED_DIR}/; \
-	      ${MAKE} ${FINEWEB_TRANS_DIR}/$$f-job; \
+	      if [ -e ${FINEWEB_TRANS_DIR}/$$f ]; then \
+	        mkdir -p ${FINEWEB_UNRELEASED_DIR}; \
+	        mv ${FINEWEB_TRANS_DIR}/$$f* ${FINEWEB_UNRELEASED_DIR}/; \
+	      fi; \
+	      rm -f ${FINEWEB_TRANS_DIR}/$$f.submit; \
+	      ${MAKE} MARIAN_MINI_BATCH=32 MARIAN_MAXI_BATCH=4 TRANSLATE_JOB_MEM=128g ${FINEWEB_TRANS_DIR}/$$f-job; \
 	    fi \
-	  fi \
 	done
 
-
+#	      ${MAKE} MARIAN_MINI_BATCH=16 MARIAN_MAXI_BATCH=4 TRANSLATE_JOB_MEM=128g ${FINEWEB_TRANS_DIR}/$$f-job;
 
 
 ## find incomplete translation files
@@ -904,7 +919,7 @@ ${FINEWEB_TRANS_RELEASE_TRG}: # ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%: ${FIN
 	     i=`gzip -cd $$I | wc -l`; \
 	     o=`gzip -cd $$O | wc -l`; \
 	     if [ $$i -eq $$o ]; then \
-	       echo "- translations are complete ($(notdir $@))"; \
+	       echo "- translations are complete ($(TRG)/$(notdir $@))"; \
 	       t=`gzip -cd $$T | wc -l`; \
 	       if [ $$o -eq $$t ]; then \
 	         echo "- translations in $(notdir $@) have the same length as original text data"; \
@@ -1003,18 +1018,14 @@ endif
 	@echo "Translations in plain text format:"        >> $@
 	@for d in ${FINEWEB_TRANS_RELEASE_TRG}; do \
 	   if [ -e $$d ]; then \
-	     echo -n "* [$$d](${STORAGE_URL}$$d): "       >> $@; \
-	     echo "get stats for $$d"; \
-	     zcat $$d | wc -lw  >> $@; \
+	     echo "* [$$d](${STORAGE_URL}$$d)"            >> $@; \
 	   fi \
 	done
 	@echo ""                                          >> $@
 	@echo "Original data in plain text format:"       >> $@
 	@for d in ${FINEWEB_TRANS_RELEASE_SRC}; do \
 	   if [ -e $$d ]; then \
-	     echo -n "* [$$d](${STORAGE_URL}$$d): "       >> $@; \
-	     echo "get stats for $$d"; \
-	     zcat $$d | wc -lw  >> $@; \
+	     echo "* [$$d](${STORAGE_URL}$$d)"            >> $@; \
 	   fi \
 	done
 	@echo ""                                          >> $@
@@ -1026,6 +1037,13 @@ endif
 	   fi \
 	done
 
+
+## for adding stats for plan text files: replace with
+#
+#	     echo -n "* [$$d](${STORAGE_URL}$$d): "       >> $@; \
+#	     echo "get stats for $$d"; \
+#	     zcat $$d | wc -lw  >> $@; \
+#
 
 
 ##---------------------------------------

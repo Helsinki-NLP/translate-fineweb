@@ -17,10 +17,10 @@ args = parser.parse_args()
 
 lang = args.lang
 
-
-with gzip.open(args.jsonl_file,'rt') as j:
-    with gzip.open(args.source_language_file,'rt') as s:
-        with gzip.open(args.target_language_file,'rt') as t:
+count = 0
+with gzip.open(args.jsonl_file,'rt', encoding='utf-8', errors='replace') as j:
+    with gzip.open(args.source_language_file,'rt', encoding='utf-8', errors='replace') as s:
+        with gzip.open(args.target_language_file,'rt', encoding='utf-8', errors='replace') as t:
 
             for line in j:
                 document = json.loads(line)
@@ -39,12 +39,13 @@ with gzip.open(args.jsonl_file,'rt') as j:
                     try:
                         target_text = t.readline().rstrip()
                     except:
+                        target_text = ''
                         print(f"problems reading from source/target", file=sys.stderr)
 
                     ## remove whitespace characters when matching strings
                     textstr = re.sub(r"\s+", "", text, flags=re.UNICODE)
                     source_textstr = re.sub(r"\s+", "", source_text, flags=re.UNICODE)
-
+                    
                     while textstr.startswith(source_textstr):
                         if source_textstr != textstr:
 
@@ -59,6 +60,9 @@ with gzip.open(args.jsonl_file,'rt') as j:
                                 target_text += ' ' + t.readline().rstrip()
                             except:
                                 print(f"problems reading from source/target", file=sys.stderr)
+#                            if 'Suposant que les bateries estaven mortes' in target_text:
+#                                print("found", file=sys.stderr)
+                        
                         else:
                             translations.append(target_text)
                             break
@@ -84,6 +88,7 @@ with gzip.open(args.jsonl_file,'rt') as j:
                         try:
                             target_text = t.readline().rstrip()
                         except:
+                            target_text = ''
                             print(f"problems reading from source/target", file=sys.stderr)
                         # document['translation'] = "\n".join(translations)
                         # print(document)
@@ -92,4 +97,6 @@ with gzip.open(args.jsonl_file,'rt') as j:
                 document['language'] = lang
                 json.dump(document,sys.stdout,ensure_ascii=False)
                 print("")
-                
+#                count+=1
+#                if count > 453:
+#                    print(count)
