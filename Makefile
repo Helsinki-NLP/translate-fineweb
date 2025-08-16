@@ -223,7 +223,7 @@ FINEWEB_TEXT_DIR := ${DATASET}/txt
 check-lengths: fineweb-edu/350BT/unreleased-2025-07-30/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00047.txt.lencheck
 
 %.txt.lencheck: %.txt.gz
-	perl check-length-ratio.pl fineweb-edu/350BT/txt/$(notdir $<) $< > $@
+	perl scripts/check-length-ratio.pl fineweb-edu/350BT/txt/$(notdir $<) $< > $@
 
 #	${MAKE} $(<:.gz=.sentlen) fineweb-edu/350BT/txt/$(notdir $(<:.gz=.sentlen))
 #	paste $(<:.gz=.sentlen) fineweb-edu/350BT/txt/$(notdir $(<:.gz=.sentlen)) |\
