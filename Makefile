@@ -210,6 +210,48 @@ FINEWEB_TEXT_DIR := ${DATASET}/txt
 
 
 
+
+# check-lengths: fineweb-edu/350BT/unreleased-2025-07-30/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00047.txt.sentlen \
+# 		fineweb-edu/350BT/txt/fineweb-edu_350BT_00047.txt.sentlen
+# 	paste $^ |\
+# 	perl -e 'while(<>){@a=split(/\t/);$$b = $$a[0] > $$a[1] ? $$a[1]/$$a[0] : $$a[0]/$$a[1];unshift(@a,$$b); print join("\t",@a)}' > $@
+
+# check-lengths-sorted: check-lengths
+# 	cat -n $< | sort -n -k2,2 > $@
+
+
+check-lengths: fineweb-edu/350BT/unreleased-2025-07-30/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00047.txt.lencheck
+
+%.txt.lencheck: %.txt.gz
+	perl check-length-ratio.pl fineweb-edu/350BT/txt/$(notdir $<) $< > $@
+
+#	${MAKE} $(<:.gz=.sentlen) fineweb-edu/350BT/txt/$(notdir $(<:.gz=.sentlen))
+#	paste $(<:.gz=.sentlen) fineweb-edu/350BT/txt/$(notdir $(<:.gz=.sentlen)) |\
+#	perl -e 'while(<>){@a=split(/\t/);$$b = $$a[0] > $$a[1] ? $$a[1]/$$a[0] : $$a[0]/$$a[1];unshift(@a,$$b); print join("\t",@a)}' |\
+#	cat -n | sort -n -k2,2 > $@
+#	rm -f $(<:.gz=.sentlen) fineweb-edu/350BT/txt/$(notdir $(<:.gz=.sentlen))
+
+
+
+%.txt.sentlen: %.txt.gz
+	zcat $< | perl -e 'while(<>){@a=split(/\s+/);print scalar @a,"\n"}' > $@
+
+
+# eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00047.txt.gz
+
+#POSTPROCESS_MISSING = fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00047.postprocessed.txt.gz \
+#		fineweb-edu/350BT/eng-ukr/opusTCv20210807+bt_transformer-big_2022-03-13/fineweb-edu_350BT_00010.postprocessed.txt.gz \
+#		fineweb-edu/350BT/eng-ukr/opusTCv20210807+bt_transformer-big_2022-03-13/fineweb-edu_350BT_00022.postprocessed.txt.gz
+
+POSTPROCESS_MISSING = fineweb-edu/350BT/eng-mkd/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30/fineweb-edu_350BT_00037.postprocessed.txt.gz
+
+postprocess_missing: ${POSTPROCESS_MISSING}
+
+${POSTPROCESS_MISSING}: %.postprocessed.txt.gz: %.txt.gz
+	zcat $< | ${POST_PROCESS} gzip -c > $@
+
+
+
 ##---------------------------------------------------------------
 ## top-level targets
 ##
@@ -338,6 +380,23 @@ translate-missing-release-files:
 	done
 
 #	      ${MAKE} MARIAN_MINI_BATCH=16 MARIAN_MAXI_BATCH=4 TRANSLATE_JOB_MEM=128g ${FINEWEB_TRANS_DIR}/$$f-job;
+
+
+
+
+.PHONY: translate-missing-release-files-without-postprocessing
+translate-missing-release-files-without-postprocessing:
+	@for f in $(notdir ${FINEWEB_TRANS_RELEASE_TRG}); do \
+	    if [ ! -e ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/$$f ]; then \
+	      echo "missing release file: ${TRG}/$$f"; \
+	      if [ -e ${FINEWEB_TRANS_DIR}/$$f ]; then \
+	        mkdir -p ${FINEWEB_UNRELEASED_DIR}; \
+	        mv ${FINEWEB_TRANS_DIR}/$$f* ${FINEWEB_UNRELEASED_DIR}/; \
+	      fi; \
+	      rm -f ${FINEWEB_TRANS_DIR}/$$f.submit; \
+	      ${MAKE} MARIAN_MINI_BATCH=32 MARIAN_MAXI_BATCH=4 TRANSLATE_JOB_MEM=128g ${FINEWEB_TRANS_DIR}/$$f-job; \
+	    fi \
+	done
 
 
 ## find incomplete translation files
