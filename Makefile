@@ -109,6 +109,20 @@ OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 
 
 
+
+## nemotron-sample 100B
+
+.PHONY: %_nemotron100B
+%_nemotron100B:
+	${MAKE} DATASET=maxidl/nemotron-cc-english-run1 \
+		CORPUS=maxidl/nemotron-cc-english-run1 \
+		FINEWEB_END=200 $(@:_nemotron100B=)
+
+mv-nemo:
+	rsync -av  /scratch/project_462000963/datasets/maxidl/nemotron-cc-english-run1/shards/*.jsonl HF/maxidl/nemotron-cc-english-run1/
+	pigz HF/maxidl/nemotron-cc-english-run1/*.jsonl
+
+
 ## run targets for nemotron10K
 ## NOTE: sentence splitting is activated!
 
@@ -182,9 +196,15 @@ fineweb-find-missing:
 
 .PHONY: fineweb-translate-missing
 fineweb-translate-missing:
-	@for l in $(filter-out deu,${OELLM_LANGS}); do \
+	@for l in ${OELLM_LANGS}; do \
 	  ${MAKE} -s TRG=$$l translate-missing-release-files; \
 	done
+
+fineweb-opusalg-jobs:
+	@for l in ${OELLM_LANGS}; do \
+	  ${MAKE} HPC_CORES=40 HPC_MEM=128g TRG=$$l opus-alg.submitcpu; \
+	done
+
 
 
 ## new version of text extraction
@@ -365,6 +385,9 @@ find-missing-release-files:
 ## NOTE: very conservative mini-batch settings,
 ##       this will slow down things and also reduce GPU utilization
 
+MISSING_MARIAN_MINI_BATCH = 32
+MISSING_MARIAN_MAXI_BATCH = 4
+
 .PHONY: translate-missing-release-files
 translate-missing-release-files:
 	@for f in $(notdir ${FINEWEB_TRANS_RELEASE_TRG}); do \
@@ -375,7 +398,9 @@ translate-missing-release-files:
 	        mv ${FINEWEB_TRANS_DIR}/$$f* ${FINEWEB_UNRELEASED_DIR}/; \
 	      fi; \
 	      rm -f ${FINEWEB_TRANS_DIR}/$$f.submit; \
-	      ${MAKE} MARIAN_MINI_BATCH=32 MARIAN_MAXI_BATCH=4 TRANSLATE_JOB_MEM=128g ${FINEWEB_TRANS_DIR}/$$f-job; \
+	      ${MAKE} 	MARIAN_MINI_BATCH=${MISSING_MARIAN_MINI_BATCH} \
+			MARIAN_MAXI_BATCH=${MISSING_MARIAN_MAXI_BATCH} \
+			TRANSLATE_JOB_MEM=128g ${FINEWEB_TRANS_DIR}/$$f-job; \
 	    fi \
 	done
 
@@ -618,9 +643,12 @@ release-first:  $(firstword ${FINEWEB_TRANS_RELEASE_SRC}) \
 
 ## convert to OPUS XML
 
-.PHONY: opus
+.PHONY: opus opus-src opus-trg opus-alg
 opus: ${FINEWEB_OPUS_SRCALL} ${FINEWEB_OPUS_TRGALL} ${FINEWEB_OPUS_ALG}
 
+opus-src: ${FINEWEB_OPUS_SRCALL}
+opus-trg: ${FINEWEB_OPUS_TRGALL}
+opus-alg: ${FINEWEB_OPUS_ALG}
 
 
 ## targets for fetching the translation model
@@ -927,14 +955,15 @@ ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
 	rm -f ${TMPDIR}/${@:.gz=}
 
 
-
 ## convert to OPUS XML
 
+ZIPMERGE := $(shell which zipmerge || echo scripts/zipmerge.py)
+
 ${FINEWEB_OPUS_SRCALL}: ${FINEWEB_OPUS_SRC}
-	scripts/zipmerge.py $@ $^
+	${ZIPMERGE} $@ $^
 
 ${FINEWEB_OPUS_TRGALL}: ${FINEWEB_OPUS_TRG}
-	scripts/zipmerge.py $@ $^
+	${ZIPMERGE} $@ $^
 
 ${FINEWEB_OPUS_ALG}: ${FINEWEB_OPUS_DIR}/xml/${SRC2}-${TRG2}/%.xml.gz: ${FINEWEB_OPUS_DIR}/raw/${SRC}/%.zip ${FINEWEB_OPUS_DIR}/raw/${TRG}/%.zip
 	mkdir -p $(dir $@)

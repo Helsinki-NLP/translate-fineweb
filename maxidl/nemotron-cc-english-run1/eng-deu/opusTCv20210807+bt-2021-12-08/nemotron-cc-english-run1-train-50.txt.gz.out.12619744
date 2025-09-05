@@ -1,0 +1,18 @@
+/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb
+Starting at Sun Aug 31 20:42:58 EEST 2025
+make[4]: Entering directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+/usr/bin/make prepare-model
+make[5]: Entering directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+make[5]: Nothing to be done for 'prepare-model'.
+make[5]: Leaving directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+if [ ! -e /scratch/project_462000964/tmp ]; then mkdir -p /scratch/project_462000964/tmp; fi
+module -q load cray-python parallel expat Perl wget && cd eng-deu/opusTCv20210807+bt-2021-12-08 && /users/tiedeman/.local/bin/marian-decoder \
+	-i /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/maxidl/nemotron-cc-english-run1/eng-deu/opusTCv20210807+bt-2021-12-08/nemotron-cc-english-run1-train-50.input.gz \
+	-c decoder.yml \
+	-b 4 -n1 -d 0 1 2 3 --quiet-translation -w 20000 --mini-batch 32 --maxi-batch 8 --maxi-batch-sort src --max-length 512 --max-length-crop |\
+sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$//' | perl /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/scripts/convert_hexcodes.pl | gzip -c > /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/maxidl/nemotron-cc-english-run1/eng-deu/opusTCv20210807+bt-2021-12-08/nemotron-cc-english-run1-train-50.txt.gz
+make[4]: Leaving directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+GPU 0: 12737.26 Wh, avg power: 302.03 W (151821.54 s)
+GPU 2: 12619.02 Wh, avg power: 299.22 W (151821.54 s)
+TOTAL: 25356.28 Wh
+Finishing at Tue Sep  2 14:53:20 EEST 2025
