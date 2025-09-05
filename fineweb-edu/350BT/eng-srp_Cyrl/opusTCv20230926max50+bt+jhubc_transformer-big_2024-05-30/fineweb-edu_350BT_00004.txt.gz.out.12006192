@@ -1,0 +1,20 @@
+/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb
+Starting at Fri Jul 25 07:56:26 EEST 2025
+make[3]: Entering directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+mkdir -p fineweb-edu/350BT/eng-srp_Cyrl/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30/
+gzip -cd < fineweb-edu/350BT/txt/fineweb-edu_350BT_00004.txt.gz | eng-srp_Cyrl/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30/preprocess.sh eng srp_Cyrl eng-srp_Cyrl/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30/source.spm | gzip -c > fineweb-edu/350BT/eng-srp_Cyrl/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30/fineweb-edu_350BT_00004.input.gz
+/usr/bin/make prepare-model
+make[4]: Entering directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+make[4]: Nothing to be done for 'prepare-model'.
+make[4]: Leaving directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+if [ ! -e /scratch/project_462000964/tmp ]; then mkdir -p /scratch/project_462000964/tmp; fi
+module -q load cray-python parallel expat Perl wget && cd eng-srp_Cyrl/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30 && /users/tiedeman/.local/bin/marian-decoder \
+	-i /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/fineweb-edu/350BT/eng-srp_Cyrl/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30/fineweb-edu_350BT_00004.input.gz \
+	-c decoder.yml \
+	-b 4 -n1 -d 0 1 2 3 --quiet-translation -w 20000 --mini-batch 64 --maxi-batch 8 --maxi-batch-sort src --max-length 512 --max-length-crop |\
+sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$//' | perl /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/scripts/convert_hexcodes.pl | gzip -c > /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/fineweb-edu/350BT/eng-srp_Cyrl/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30/fineweb-edu_350BT_00004.txt.gz
+make[3]: Leaving directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+GPU 0: 13541.44 Wh, avg power: 362.44 W (134503.54 s)
+GPU 2: 13799.93 Wh, avg power: 369.36 W (134503.54 s)
+TOTAL: 27341.37 Wh
+Finishing at Sat Jul 26 21:18:10 EEST 2025

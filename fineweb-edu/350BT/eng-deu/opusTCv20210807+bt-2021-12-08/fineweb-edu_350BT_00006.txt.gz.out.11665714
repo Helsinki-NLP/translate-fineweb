@@ -1,0 +1,17 @@
+/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb
+Starting at Tue Jul  1 10:48:32 EEST 2025
+make[2]: Entering directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+/usr/bin/make prepare-model
+make[3]: Entering directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+make[3]: Nothing to be done for 'prepare-model'.
+make[3]: Leaving directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+module -q load cray-python parallel expat Perl wget && cd eng-deu/opusTCv20210807+bt-2021-12-08 && /users/tiedeman/.local/bin/marian-decoder \
+	-i /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00006.input.gz \
+	-c decoder.yml \
+	-b 4 -n1 -d 0 1 2 3 --quiet-translation -w 20000 --mini-batch 64 --maxi-batch 8 --maxi-batch-sort src --max-length 512 --max-length-crop |\
+sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$//' | perl /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/scripts/convert_hexcodes.pl | gzip -c > /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00006.txt.gz
+make[2]: Leaving directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+GPU 0: 9016.39 Wh, avg power: 361.62 W (89760.78 s)
+GPU 2: 9347.31 Wh, avg power: 374.89 W (89760.78 s)
+TOTAL: 18363.70 Wh
+Finishing at Wed Jul  2 11:44:33 EEST 2025

@@ -1,0 +1,13 @@
+/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb
+Starting at Fri Jul  4 00:22:34 EEST 2025
+make[3]: Entering directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+/usr/bin/make prepare-model
+make[4]: Entering directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+make[4]: Nothing to be done for 'prepare-model'.
+make[4]: Leaving directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+mkdir -p /scratch//tmp /scratch//tmp
+make[3]: Leaving directory '/pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb'
+GPU 0: 0.08 Wh, avg power: 94.65 W (2.92 s)
+GPU 2: 0.07 Wh, avg power: 87.16 W (2.92 s)
+TOTAL: 0.15 Wh
+Finishing at Fri Jul  4 00:22:37 EEST 2025
