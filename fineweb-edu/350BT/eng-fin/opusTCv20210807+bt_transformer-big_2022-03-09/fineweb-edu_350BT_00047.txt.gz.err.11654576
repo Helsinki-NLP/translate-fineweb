@@ -1,0 +1,188 @@
+
+Lmod is automatically replacing "craype-x86-rome" with "craype-x86-trento".
+
+
+Lmod is automatically replacing "craype-accel-host" with
+"craype-accel-amd-gfx90a".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) Perl/5.38.0-cpeGNU-24.03     2) cpeGNU/24.03     3) expat/2.6.2-cpeGNU-24.03
+
+The following have been reloaded with a version change:
+  1) partition/L => partition/G
+
+[2025-06-29 04:06:09] [marian] Marian v1.11.13 fde3d3c8 2023-12-04 18:04:48 +0200
+[2025-06-29 04:06:09] [marian] Running on nid007884 as process 118324 with command line:
+[2025-06-29 04:06:09] [marian] /users/tiedeman/.local/bin/marian-decoder -i /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/fineweb-edu/350BT/eng-fin/opusTCv20210807+bt_transformer-big_2022-03-09/fineweb-edu_350BT_00047.input.gz -c decoder.yml -b 4 -n1 -d 0 1 2 3 --quiet-translation -w 20000 --mini-batch 64 --maxi-batch 8 --maxi-batch-sort src --max-length 512 --max-length-crop
+[2025-06-29 04:06:11] [config] alignment: ""
+[2025-06-29 04:06:11] [config] allow-special: false
+[2025-06-29 04:06:11] [config] allow-unk: false
+[2025-06-29 04:06:11] [config] authors: false
+[2025-06-29 04:06:11] [config] beam-size: 4
+[2025-06-29 04:06:11] [config] bert-class-symbol: "[CLS]"
+[2025-06-29 04:06:11] [config] bert-mask-symbol: "[MASK]"
+[2025-06-29 04:06:11] [config] bert-masking-fraction: 0.15
+[2025-06-29 04:06:11] [config] bert-sep-symbol: "[SEP]"
+[2025-06-29 04:06:11] [config] bert-train-type-embeddings: true
+[2025-06-29 04:06:11] [config] bert-type-vocab-size: 2
+[2025-06-29 04:06:11] [config] best-deep: false
+[2025-06-29 04:06:11] [config] build-info: ""
+[2025-06-29 04:06:11] [config] char-conv-filters-num:
+[2025-06-29 04:06:11] [config]   - 200
+[2025-06-29 04:06:11] [config]   - 200
+[2025-06-29 04:06:11] [config]   - 250
+[2025-06-29 04:06:11] [config]   - 250
+[2025-06-29 04:06:11] [config]   - 300
+[2025-06-29 04:06:11] [config]   - 300
+[2025-06-29 04:06:11] [config]   - 300
+[2025-06-29 04:06:11] [config]   - 300
+[2025-06-29 04:06:11] [config] char-conv-filters-widths:
+[2025-06-29 04:06:11] [config]   - 1
+[2025-06-29 04:06:11] [config]   - 2
+[2025-06-29 04:06:11] [config]   - 3
+[2025-06-29 04:06:11] [config]   - 4
+[2025-06-29 04:06:11] [config]   - 5
+[2025-06-29 04:06:11] [config]   - 6
+[2025-06-29 04:06:11] [config]   - 7
+[2025-06-29 04:06:11] [config]   - 8
+[2025-06-29 04:06:11] [config] char-highway: 4
+[2025-06-29 04:06:11] [config] char-stride: 5
+[2025-06-29 04:06:11] [config] check-nan: false
+[2025-06-29 04:06:11] [config] cite: false
+[2025-06-29 04:06:11] [config] cpu-threads: 0
+[2025-06-29 04:06:11] [config] data-threads: 8
+[2025-06-29 04:06:11] [config] dec-cell: gru
+[2025-06-29 04:06:11] [config] dec-cell-base-depth: 2
+[2025-06-29 04:06:11] [config] dec-cell-high-depth: 1
+[2025-06-29 04:06:11] [config] dec-depth: 6
+[2025-06-29 04:06:11] [config] devices:
+[2025-06-29 04:06:11] [config]   - 0
+[2025-06-29 04:06:11] [config]   - 1
+[2025-06-29 04:06:11] [config]   - 2
+[2025-06-29 04:06:11] [config]   - 3
+[2025-06-29 04:06:11] [config] dim-emb: 1024
+[2025-06-29 04:06:11] [config] dim-rnn: 1024
+[2025-06-29 04:06:11] [config] dim-vocabs:
+[2025-06-29 04:06:11] [config]   - 57848
+[2025-06-29 04:06:11] [config]   - 57848
+[2025-06-29 04:06:11] [config] dump-config: ""
+[2025-06-29 04:06:11] [config] enc-cell: gru
+[2025-06-29 04:06:11] [config] enc-cell-depth: 1
+[2025-06-29 04:06:11] [config] enc-depth: 6
+[2025-06-29 04:06:11] [config] enc-type: bidirectional
+[2025-06-29 04:06:11] [config] factors-combine: sum
+[2025-06-29 04:06:11] [config] factors-dim-emb: 0
+[2025-06-29 04:06:11] [config] force-decode: false
+[2025-06-29 04:06:11] [config] gemm-type: float32
+[2025-06-29 04:06:11] [config] ignore-model-config: false
+[2025-06-29 04:06:11] [config] input:
+[2025-06-29 04:06:11] [config]   - /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/fineweb-edu/350BT/eng-fin/opusTCv20210807+bt_transformer-big_2022-03-09/fineweb-edu_350BT_00047.input.gz
+[2025-06-29 04:06:11] [config] input-types:
+[2025-06-29 04:06:11] [config]   []
+[2025-06-29 04:06:11] [config] interpolate-env-vars: false
+[2025-06-29 04:06:11] [config] layer-normalization: false
+[2025-06-29 04:06:11] [config] lemma-dependency: ""
+[2025-06-29 04:06:11] [config] lemma-dim-emb: 0
+[2025-06-29 04:06:11] [config] log: ""
+[2025-06-29 04:06:11] [config] log-level: info
+[2025-06-29 04:06:11] [config] log-time-zone: ""
+[2025-06-29 04:06:11] [config] max-length: 512
+[2025-06-29 04:06:11] [config] max-length-crop: true
+[2025-06-29 04:06:11] [config] max-length-factor: 3
+[2025-06-29 04:06:11] [config] maxi-batch: 8
+[2025-06-29 04:06:11] [config] maxi-batch-sort: src
+[2025-06-29 04:06:11] [config] mini-batch: 64
+[2025-06-29 04:06:11] [config] mini-batch-words: 0
+[2025-06-29 04:06:11] [config] models:
+[2025-06-29 04:06:11] [config]   - /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-fin/opusTCv20210807+bt_transformer-big_2022-03-09/opusTCv20210807+bt.spm32k-spm32k.transformer-big.model1.npz.best-perplexity.npz
+[2025-06-29 04:06:11] [config] n-best: false
+[2025-06-29 04:06:11] [config] no-spm-decode: false
+[2025-06-29 04:06:11] [config] normalize: 1
+[2025-06-29 04:06:11] [config] num-devices: 0
+[2025-06-29 04:06:11] [config] optimize: false
+[2025-06-29 04:06:11] [config] output: stdout
+[2025-06-29 04:06:11] [config] output-approx-knn:
+[2025-06-29 04:06:11] [config]   []
+[2025-06-29 04:06:11] [config] output-omit-bias: false
+[2025-06-29 04:06:11] [config] output-sampling:
+[2025-06-29 04:06:11] [config]   []
+[2025-06-29 04:06:11] [config] precision:
+[2025-06-29 04:06:11] [config]   - float32
+[2025-06-29 04:06:11] [config] quantize-range: 0
+[2025-06-29 04:06:11] [config] quiet: false
+[2025-06-29 04:06:11] [config] quiet-translation: true
+[2025-06-29 04:06:11] [config] relative-paths: false
+[2025-06-29 04:06:11] [config] right-left: false
+[2025-06-29 04:06:11] [config] seed: 0
+[2025-06-29 04:06:11] [config] shortlist:
+[2025-06-29 04:06:11] [config]   []
+[2025-06-29 04:06:11] [config] skip: false
+[2025-06-29 04:06:11] [config] skip-cost: false
+[2025-06-29 04:06:11] [config] stat-freq: 0
+[2025-06-29 04:06:11] [config] tied-embeddings: false
+[2025-06-29 04:06:11] [config] tied-embeddings-all: true
+[2025-06-29 04:06:11] [config] tied-embeddings-src: false
+[2025-06-29 04:06:11] [config] transformer-aan-activation: swish
+[2025-06-29 04:06:11] [config] transformer-aan-depth: 2
+[2025-06-29 04:06:11] [config] transformer-aan-nogate: false
+[2025-06-29 04:06:11] [config] transformer-decoder-autoreg: self-attention
+[2025-06-29 04:06:11] [config] transformer-decoder-dim-ffn: 0
+[2025-06-29 04:06:11] [config] transformer-decoder-ffn-depth: 0
+[2025-06-29 04:06:11] [config] transformer-depth-scaling: false
+[2025-06-29 04:06:11] [config] transformer-dim-aan: 2048
+[2025-06-29 04:06:11] [config] transformer-dim-ffn: 4096
+[2025-06-29 04:06:11] [config] transformer-ffn-activation: relu
+[2025-06-29 04:06:11] [config] transformer-ffn-depth: 2
+[2025-06-29 04:06:11] [config] transformer-guided-alignment-layer: last
+[2025-06-29 04:06:11] [config] transformer-heads: 16
+[2025-06-29 04:06:11] [config] transformer-no-projection: false
+[2025-06-29 04:06:11] [config] transformer-pool: false
+[2025-06-29 04:06:11] [config] transformer-postprocess: dan
+[2025-06-29 04:06:11] [config] transformer-postprocess-emb: d
+[2025-06-29 04:06:11] [config] transformer-postprocess-top: ""
+[2025-06-29 04:06:11] [config] transformer-preprocess: ""
+[2025-06-29 04:06:11] [config] transformer-rnn-projection: false
+[2025-06-29 04:06:11] [config] transformer-tied-layers:
+[2025-06-29 04:06:11] [config]   []
+[2025-06-29 04:06:11] [config] transformer-train-position-embeddings: false
+[2025-06-29 04:06:11] [config] tsv: false
+[2025-06-29 04:06:11] [config] tsv-fields: 0
+[2025-06-29 04:06:11] [config] type: transformer
+[2025-06-29 04:06:11] [config] ulr: false
+[2025-06-29 04:06:11] [config] ulr-dim-emb: 0
+[2025-06-29 04:06:11] [config] ulr-trainable-transformation: false
+[2025-06-29 04:06:11] [config] version: v1.10.24; 12a1bfa 2021-10-11 16:59:52 +0100
+[2025-06-29 04:06:11] [config] vocabs:
+[2025-06-29 04:06:11] [config]   - /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-fin/opusTCv20210807+bt_transformer-big_2022-03-09/opusTCv20210807+bt.spm32k-spm32k.vocab.yml
+[2025-06-29 04:06:11] [config]   - /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-fin/opusTCv20210807+bt_transformer-big_2022-03-09/opusTCv20210807+bt.spm32k-spm32k.vocab.yml
+[2025-06-29 04:06:11] [config] weights:
+[2025-06-29 04:06:11] [config]   []
+[2025-06-29 04:06:11] [config] word-penalty: 0
+[2025-06-29 04:06:11] [config] word-scores: false
+[2025-06-29 04:06:11] [config] workspace: 20000
+[2025-06-29 04:06:11] [config] Loaded model has been created with Marian v1.10.24; 12a1bfa 2021-10-11 16:59:52 +0100
+[2025-06-29 04:06:11] [data] Loading vocabulary from JSON/Yaml file /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-fin/opusTCv20210807+bt_transformer-big_2022-03-09/opusTCv20210807+bt.spm32k-spm32k.vocab.yml
+[2025-06-29 04:06:11] [data] Loading vocabulary from JSON/Yaml file /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-fin/opusTCv20210807+bt_transformer-big_2022-03-09/opusTCv20210807+bt.spm32k-spm32k.vocab.yml
+[2025-06-29 04:06:12] [MPI rank 0 out of 1]: GPU[0]
+[2025-06-29 04:06:12] [MPI rank 0 out of 1]: GPU[1]
+[2025-06-29 04:06:12] [MPI rank 0 out of 1]: GPU[2]
+[2025-06-29 04:06:12] [MPI rank 0 out of 1]: GPU[3]
+[2025-06-29 04:06:12] Loading model from /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-fin/opusTCv20210807+bt_transformer-big_2022-03-09/opusTCv20210807+bt.spm32k-spm32k.transformer-big.model1.npz.best-perplexity.npz
+[2025-06-29 04:06:16] [memory] Extending reserved space to 20096 MB (device gpu1)
+[2025-06-29 04:06:16] [memory] Extending reserved space to 20096 MB (device gpu3)
+[2025-06-29 04:06:16] [memory] Extending reserved space to 20096 MB (device gpu0)
+[2025-06-29 04:06:16] [memory] Extending reserved space to 20096 MB (device gpu2)
+[2025-06-29 04:06:17] Loaded model config
+[2025-06-29 04:06:17] Loaded model config
+[2025-06-29 04:06:17] Loaded model config
+[2025-06-29 04:06:17] Loaded model config
+[2025-06-29 04:06:18] Loading scorer of type transformer as feature F0
+[2025-06-29 04:06:18] Loading scorer of type transformer as feature F0
+[2025-06-29 04:06:18] Loading scorer of type transformer as feature F0
+[2025-06-29 04:06:18] Loading scorer of type transformer as feature F0
+[2025-06-29 04:06:19] [memory] Reserving 898 MB, device gpu0
+[2025-06-29 04:06:19] [memory] Reserving 898 MB, device gpu3
+[2025-06-29 04:06:19] [memory] Reserving 898 MB, device gpu2
+[2025-06-29 04:06:19] [memory] Reserving 898 MB, device gpu1
+[2025-06-30 03:18:46] Total time: 83545.49181s wall
