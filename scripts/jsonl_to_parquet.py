@@ -16,8 +16,9 @@ target=Path(args.parquet_file)
 with pd.read_json(source,lines=True, chunksize=10000) as reader:
     for chunk in reader:
         if not target.exists():
-            chunk.to_parquet(target, engine='fastparquet')            
+            chunk.to_parquet(target, engine='fastparquet', compression='zstd')
         else:
             chunk.to_parquet(target,
-                             engine='fastparquet', 
+                             engine='fastparquet',
+                             compression='zstd',
                              append=True)                    

@@ -293,7 +293,7 @@ all: translate
 upload:
 	which a-put
 	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/txt/${TRG}
-	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/jsonl/${TRG}
+	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/jsonl/${TRG}/*.jsonl.gz
 	mkdir -p data
 	swift list OELLM-synthetic --prefix ${DATASET}/translated/ \
 	| sed 's#^#* ${STORAGE_URL}#' > data/$(subst /,-,${DATASET}).md
@@ -1081,20 +1081,20 @@ endif
 	@echo "* decoding beam size: ${MARIAN_BEAM_SIZE}" >> $@
 	@echo ""                                          >> $@
 	@echo "## release files"                          >> $@
-	@echo ""                                          >> $@
-	@echo "Translated documents in parquet:"          >> $@
-	@for d in ${FINEWEB_TRANS_RELEASE_PARQUET}; do \
-	   if [ -e $$d ]; then \
-	     echo "* [$$d](${STORAGE_URL}$$d)"            >> $@; \
-	   fi \
-	done
-	@echo ""                                          >> $@
-	@echo "Original documents in parquet:"            >> $@
-	@for d in ${FINEWEB_ORIG_RELEASE_PARQUET}; do \
-	   if [ -e $$d ]; then \
-	     echo "* [$$d](${STORAGE_URL}$$d)"            >> $@; \
-	   fi \
-	done
+#	@echo ""                                          >> $@
+#	@echo "Translated documents in parquet:"          >> $@
+#	@for d in ${FINEWEB_TRANS_RELEASE_PARQUET}; do \
+#	   if [ -e $$d ]; then \
+#	     echo "* [$$d](${STORAGE_URL}$$d)"            >> $@; \
+#	   fi \
+#	done
+#	@echo ""                                          >> $@
+#	@echo "Original documents in parquet:"            >> $@
+#	@for d in ${FINEWEB_ORIG_RELEASE_PARQUET}; do \
+#	   if [ -e $$d ]; then \
+#	     echo "* [$$d](${STORAGE_URL}$$d)"            >> $@; \
+#	   fi \
+#	done
 	@echo ""                                          >> $@
 	@echo "Translated documents in JSONL:"            >> $@
 	@for d in ${FINEWEB_TRANS_RELEASE_JSON}; do \

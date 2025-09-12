@@ -1,0 +1,32 @@
+#!/bin/bash -l
+#SBATCH -J "fineweb-edu/350BT/eng-ukr/opusTCv20210807+bt_transformer-big_2022-03-13/fineweb-edu_350BT_00025.txt.gz"
+#SBATCH -o fineweb-edu/350BT/eng-ukr/opusTCv20210807+bt_transformer-big_2022-03-13/fineweb-edu_350BT_00025.txt.gz.out.%j
+#SBATCH -e fineweb-edu/350BT/eng-ukr/opusTCv20210807+bt_transformer-big_2022-03-13/fineweb-edu_350BT_00025.txt.gz.err.%j
+#SBATCH --mail-type=END
+#SBATCH --mail-user=jorg.tiedemann@helsinki.fi
+#SBATCH --mem=128g
+#SBATCH --cpus-per-task 8
+#SBATCH -n 1
+#SBATCH -N 1
+#SBATCH -t 72:00:00
+#SBATCH -p small-g
+#SBATCH --gpus-per-node=4
+
+#SBATCH --account=project_462000964
+
+
+#SBATCH --cpus-per-task 56
+
+
+module -q load cray-python parallel expat Perl wget
+cd ${SLURM_SUBMIT_DIR:-.}
+pwd
+echo "Starting at `date`"
+CPU_BIND="mask_cpu:fe000000000000,fe00000000000000"
+CPU_BIND="${CPU_BIND},fe0000,fe000000"
+CPU_BIND="${CPU_BIND},fe,fe00"
+CPU_BIND="${CPU_BIND},fe00000000,fe0000000000"
+/appl/local/csc/soft/ai/bin/gpu-energy --save
+srun --cpu-bind=${CPU_BIND} make -j 8 HPC_HOST=lumi  fineweb-edu/350BT/eng-ukr/opusTCv20210807+bt_transformer-big_2022-03-13/fineweb-edu_350BT_00025.txt.gz
+/appl/local/csc/soft/ai/bin/gpu-energy --diff
+echo "Finishing at `date`"

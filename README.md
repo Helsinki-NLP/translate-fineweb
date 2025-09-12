@@ -45,10 +45,6 @@ Links are availabe from [README-2024-06-26.md](README-2024-06-26.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/swe/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/swe/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/tur/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/tur/README.md)
 * [spyysalo/nemotron-cc-10K-sample/translated/txt/ukr/README.md](spyysalo/nemotron-cc-10K-sample/translated/txt/ukr/README.md)
-
-
-
-
 ## release files for fineweb-edu/350BT
 
 * [fineweb-edu/350BT/translated/txt/bos/README.md](fineweb-edu/350BT/translated/txt/bos/README.md)
@@ -87,3 +83,11 @@ Links are availabe from [README-2024-06-26.md](README-2024-06-26.md)
 * [fineweb-edu/350BT/translated/txt/swe/README.md](fineweb-edu/350BT/translated/txt/swe/README.md)
 * [fineweb-edu/350BT/translated/txt/tur/README.md](fineweb-edu/350BT/translated/txt/tur/README.md)
 * [fineweb-edu/350BT/translated/txt/ukr/README.md](fineweb-edu/350BT/translated/txt/ukr/README.md)
+
+
+## release files for maxidl/nemotron-cc-english-run1
+
+* [maxidl/nemotron-cc-english-run1/translated/txt/deu/README.md](maxidl/nemotron-cc-english-run1/translated/txt/deu/README.md)
+* [maxidl/nemotron-cc-english-run1/translated/txt/fin/README.md](maxidl/nemotron-cc-english-run1/translated/txt/fin/README.md)
+* [maxidl/nemotron-cc-english-run1/translated/txt/spa/README.md](maxidl/nemotron-cc-english-run1/translated/txt/spa/README.md)
+* [maxidl/nemotron-cc-english-run1/translated/txt/swe/README.md](maxidl/nemotron-cc-english-run1/translated/txt/swe/README.md)
