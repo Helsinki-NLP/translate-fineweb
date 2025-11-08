@@ -1,0 +1,10 @@
+/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb
+Starting at Mon Oct 27 11:30:21 EET 2025
+make[5]: Entering directory '/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb'
+make[6]: Entering directory '/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb'
+make[6]: Leaving directory '/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb'
+make[5]: Leaving directory '/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb'
+GPU 0: 10005.21 Wh, avg power: 347.04 W (103788.05 s)
+GPU 2: 10027.02 Wh, avg power: 347.80 W (103788.05 s)
+TOTAL: 20032.23 Wh
+Finishing at Tue Oct 28 16:20:09 EET 2025

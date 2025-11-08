@@ -1,0 +1,18 @@
+/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb
+Starting at Thu Oct  9 05:58:05 EEST 2025
+make[3]: Entering directory '/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb'
+/usr/bin/make prepare-model
+make[4]: Entering directory '/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb'
+make[4]: Nothing to be done for 'prepare-model'.
+make[4]: Leaving directory '/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb'
+if [ ! -e /scratch/project_462000964/tmp ]; then mkdir -p /scratch/project_462000964/tmp; fi
+module -q load cray-python parallel expat Perl wget && cd eng-mlt/translate-en-mt-v1.0-hplt_opus && /users/tiedeman/.local/bin/marian-decoder \
+	-i /pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb/maxidl/nemotron-cc-english-run1/eng-mlt/translate-en-mt-v1.0-hplt_opus/nemotron-cc-english-run1-train-10.input.gz \
+	-c decoder.yml \
+	-b 4 -n1 -d 0 1 2 3 --quiet-translation -w -10000 --mini-batch 64 --maxi-batch 4 --maxi-batch-sort src --max-length 512 --max-length-crop |\
+ gzip -c > /pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb/maxidl/nemotron-cc-english-run1/eng-mlt/translate-en-mt-v1.0-hplt_opus/nemotron-cc-english-run1-train-10.txt.gz
+make[3]: Leaving directory '/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb'
+GPU 0: 6235.96 Wh, avg power: 262.64 W (85476.43 s)
+GPU 2: 6345.04 Wh, avg power: 267.23 W (85476.43 s)
+TOTAL: 12581.00 Wh
+Finishing at Fri Oct 10 05:42:42 EEST 2025

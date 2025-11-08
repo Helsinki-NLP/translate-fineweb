@@ -1,0 +1,9 @@
+/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb
+Starting at Thu Nov  6 23:29:13 EET 2025
+make[3]: Entering directory '/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb'
+make[3]: 'maxidl/nemotron-cc-english-run1/eng-tur/opusTCv20210807+bt_transformer-big_2022-02-25/nemotron-cc-english-run1-train-61.txt.gz' is up to date.
+make[3]: Leaving directory '/pfs/lustrep1/scratch/project_462000964/tiedeman/translate-fineweb'
+GPU 0: 0.13 Wh, avg power: 93.46 W (4.98 s)
+GPU 2: 0.12 Wh, avg power: 87.12 W (4.98 s)
+TOTAL: 0.25 Wh
+Finishing at Thu Nov  6 23:29:19 EET 2025
