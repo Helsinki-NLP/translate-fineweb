@@ -77,7 +77,8 @@ SENTENCE_SPLIT := 0
 # DATASET     := spyysalo/nemotron-cc-10K-sample
 # CORPUS      := nemotron-cc-10K-sample
 DATASET       := fineweb-edu/350BT
-CORPUS        := fineweb-edu
+CORPUS        := transweb-edu
+# CORPUS        := fineweb-edu
 FINEWEB_START := 1
 FINEWEB_END   := 50
 
@@ -115,12 +116,52 @@ OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 .PHONY: %_nemotron100B
 %_nemotron100B:
 	${MAKE} DATASET=maxidl/nemotron-cc-english-run1 \
-		CORPUS=maxidl/nemotron-cc-english-run1 \
+		CORPUS=nemotron-cc-translated \
 		FINEWEB_END=200 $(@:_nemotron100B=)
 
 mv-nemo:
 	rsync -av  /scratch/project_462000963/datasets/maxidl/nemotron-cc-english-run1/shards/*.jsonl HF/maxidl/nemotron-cc-english-run1/
 	pigz HF/maxidl/nemotron-cc-english-run1/*.jsonl
+
+.PHONY: fineweb-find-missing
+nemotron100B-find-missing:
+	@for l in ${OELLM_LANGS}; do \
+	  echo "checking $$l"; \
+	  ${MAKE} -s TRG=$$l find-missing-release-files_nemotron100B; \
+	done
+
+
+nemotron100B-do-missing:
+	@for l in ${OELLM_LANGS}; do \
+	  echo "checking $$l"; \
+	  ${MAKE} -s TRG=$$l translate-jobs_nemotron100B; \
+	done
+
+#	  ${MAKE} -s TRG=$$l move-missing-release-files_nemotron100B;
+#	  ${MAKE} -s TRG=$$l prepare-input_nemotron100B;
+
+
+nemotron100B-release:
+	@for l in ${OELLM_LANGS}; do \
+	  echo "releasing $$l"; \
+	  ${MAKE} TRG=$$l release-data_nemotron100B; \
+	  mkdir -p /scratch/project_462000963/users/tiedeman/nemotron-cc-translated/100B/opus-mt/$$l; \
+	  rsync -av maxidl/nemotron-cc-english-run1/translated/jsonl/$$l/nemotron-cc-english-run1-train-*.jsonl.gz /scratch/project_462000963/users/tiedeman/nemotron-cc-translated/100B/opus-mt/$$l/; \
+	  chgrp project_462000963 /scratch/project_462000963/users/tiedeman/nemotron-cc-translated/100B/opus-mt/$$l; \
+	  chgrp project_462000963 /scratch/project_462000963/users/tiedeman/nemotron-cc-translated/100B/opus-mt/$$l/*.gz; \
+	done
+
+nemotron100B-opus-jobs:
+	@for l in ${OELLM_LANGS}; do \
+	  ${MAKE} HPC_CORES=40 HPC_MEM=256g TRG=$$l opus_nemotron100B.submitcpu; \
+	done
+
+
+nemotron100B-upload:
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l upload_nemotron100B; \
+	done
+
 
 
 ## run targets for nemotron10K
@@ -203,6 +244,11 @@ fineweb-translate-missing:
 fineweb-opusalg-jobs:
 	@for l in ${OELLM_LANGS}; do \
 	  ${MAKE} HPC_CORES=40 HPC_MEM=128g TRG=$$l opus-alg.submitcpu; \
+	done
+
+fineweb-opustrg-jobs:
+	@for l in ${OELLM_LANGS}; do \
+	  ${MAKE} HPC_CORES=4 HPC_MEM=128g TRG=$$l opus-trg.submitcpu; \
 	done
 
 
@@ -318,7 +364,8 @@ upload:
 
 upload-original:
 	which a-put
-	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/jsonl/${SRC}/*.parquet
+	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/txt/${SRC}
+	swift upload OELLM-synthetic --changed --skip-identical --use-slo --segment-size 5G ${DATASET}/translated/jsonl/${SRC}/*.jsonl.gz
 
 
 
@@ -372,6 +419,22 @@ find-missing-release-files:
 	    fi \
 	  fi \
 	done
+
+
+.PHONY: move-missing-release-files
+move-missing-release-files:
+	@for f in $(notdir ${FINEWEB_TRANS_RELEASE_TRG}); do \
+	    if [ ! -e ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/$$f ]; then \
+	      echo "missing release file: ${TRG}/$$f"; \
+	      if [ -e ${FINEWEB_TRANS_DIR}/$$f ]; then \
+	        mkdir -p ${FINEWEB_UNRELEASED_DIR}; \
+	        mv ${FINEWEB_TRANS_DIR}/$$f* ${FINEWEB_UNRELEASED_DIR}/; \
+		mv ${FINEWEB_TRANS_DIR}/`echo $$f | sed 's/\.txt\.gz/.input.gz/'` ${FINEWEB_UNRELEASED_DIR}/; \
+	      fi; \
+	      rm -f ${FINEWEB_TRANS_DIR}/$$f.submit; \
+	    fi \
+	done
+
 
 ## find missing release files
 ## move them to a new directory (unreleased)
@@ -483,7 +546,8 @@ ct2-job-%:
 # DASHBOARD_METRIC  := spbleu
 DASHBOARD_TESTSET := flores200-devtest
 DASHBOARD_METRIC  := bleu
-DASHBOARD_URL     := https://opus.nlpl.eu/dashboard/api.php
+# DASHBOARD_URL     := https://opus.nlpl.eu/dashboard/api.php
+DASHBOARD_URL     := https://opus.nlpl.eu/mt/api.php
 STORAGE_HOME      := https://object.pouta.csc.fi
 
 ifeq (${TRG},lav)
@@ -960,14 +1024,20 @@ ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
 ZIPMERGE := $(shell which zipmerge || echo scripts/zipmerge.py)
 
 ${FINEWEB_OPUS_SRCALL}: ${FINEWEB_OPUS_SRC}
-	${ZIPMERGE} $@ $^
+	${ZIPMERGE} $@ ${FINEWEB_OPUS_DIR}/raw/${SRC}/*.zip
+#	${ZIPMERGE} $@ $^
+	@echo "merge of all zips is done"
 
 ${FINEWEB_OPUS_TRGALL}: ${FINEWEB_OPUS_TRG}
-	${ZIPMERGE} $@ $^
+	${ZIPMERGE} $@ ${FINEWEB_OPUS_DIR}/raw/${TRG}/*.zip
+#	${ZIPMERGE} $@ $^
+	@echo "merge of all zips is done"
 
 ${FINEWEB_OPUS_ALG}: ${FINEWEB_OPUS_DIR}/xml/${SRC2}-${TRG2}/%.xml.gz: ${FINEWEB_OPUS_DIR}/raw/${SRC}/%.zip ${FINEWEB_OPUS_DIR}/raw/${TRG}/%.zip
-	mkdir -p $(dir $@)
-	scripts/sentids_to_xcesalign.py $(patsubst %.zip,%.ids.gz,$^) | gzip -c > $@
+	if [ -e $(firstword $(patsubst %.zip,%.ids.gz,$^)) ] && [ -e $(lastword $(patsubst %.zip,%.ids.gz,$^)) ]; then \
+	  mkdir -p $(dir $@); \
+	  scripts/sentids_to_xcesalign.py $(patsubst %.zip,%.ids.gz,$^) | gzip -c > $@; \
+	fi
 
 ${FINEWEB_OPUS_TRG} ${FINEWEB_OPUS_SRC}: ${FINEWEB_OPUS_DIR}/raw/%.zip: ${FINEWEB_TRANS_RELEASE_DIR}/txt/%.txt.gz
 	if [ -e $< ]; then \
@@ -1061,7 +1131,7 @@ ${FINEWEB_TRANS_RELEASE_EXAMPLE}: %.md: %.txt.gz
 	  ${PYTHONENV} python scripts/translation_examples.py \
 		-j $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_DIR}/%.jsonl.gz,$<) \
 		-s $(patsubst ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz,${FINEWEB_TXT_DIR}/%.txt.gz,$<) \
-		-t $< -l ${TRG} | head -10 > $@; \
+		-t $< -l ${TRG} -m 10 > $@; \
 	fi
 
 

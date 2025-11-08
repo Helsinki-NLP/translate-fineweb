@@ -164,10 +164,17 @@ TOKENIZER    = ${MOSESSCRIPTS}/tokenizer
 ##--------------------------------------------------------
 
 BROWSERMT_HOME    ?= ${TOOLSDIR}/browsermt
-BROWSERMT_TRAIN    = ${BROWSERMT_HOME}/marian-dev/build/marian
-BROWSERMT_DECODE   = ${BROWSERMT_HOME}/marian-dev/build/marian-decoder
-BROWSERMT_CONVERT  = ${BROWSERMT_HOME}/marian-dev/build/marian-conv
 
+ifneq ($(wildcard ${BROWSERMT_HOME}),)
+  BROWSERMT_TRAIN    = ${BROWSERMT_HOME}/marian-dev/build/marian
+  BROWSERMT_DECODE   = ${BROWSERMT_HOME}/marian-dev/build/marian-decoder
+  BROWSERMT_CONVERT  = ${BROWSERMT_HOME}/marian-dev/build/marian-conv
+else
+  BROWSERMT_HOME    = ${MARIAN_HOME}
+  BROWSERMT_TRAIN   = ${MARIAN_TRAIN}
+  BROWSERMT_DECODE  = ${MARIAN_DECODER}
+  BROWSERMT_CONVERT = ${MARIAN_HOME}/marian-conv
+endif
 
 
 ## BPE

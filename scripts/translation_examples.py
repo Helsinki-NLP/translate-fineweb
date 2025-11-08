@@ -13,13 +13,16 @@ parser.add_argument('-s', '--source-language-file', help='source language file',
 parser.add_argument('-t', '--target-language-file', help='target language file', type=str,
                     default='/users/tiedeman/research/translate-fineweb/fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00000.txt.gz')
 parser.add_argument('-l', '--lang', help='language ID (default=en)', type=str, default='en')
+parser.add_argument('-m', '--max-examples', help='maximum number of examples to print (default=0 which means all)', type=int, default=0)
 args = parser.parse_args()
 
 lang = args.lang
-
+maxnr = args.max_examples
 
 print("| original | translation |")
 print("|----------|-------------|")
+
+count = 0
 
 with gzip.open(args.jsonl_file,'rt', encoding='utf-8', errors='replace') as j:
     with gzip.open(args.source_language_file,'rt', encoding='utf-8', errors='replace') as s:
@@ -99,5 +102,6 @@ with gzip.open(args.jsonl_file,'rt', encoding='utf-8', errors='replace') as j:
                 print(' | ' ,end='')
                 print(document['translation'].replace("\n",'<br/>').replace('`',"'").replace('|','&#124;') ,end='')
                 print(' |')
-
-                    
+                count = count + 1
+                if maxnr>0 and count>maxnr:
+                    sys.exit()
