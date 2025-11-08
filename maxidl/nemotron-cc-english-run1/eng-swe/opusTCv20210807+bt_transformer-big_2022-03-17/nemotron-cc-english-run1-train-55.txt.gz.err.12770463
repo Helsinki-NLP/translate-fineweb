@@ -1,0 +1,188 @@
+
+Lmod is automatically replacing "craype-x86-rome" with "craype-x86-trento".
+
+
+Lmod is automatically replacing "craype-accel-host" with
+"craype-accel-amd-gfx90a".
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) Perl/5.38.0-cpeGNU-24.03     2) cpeGNU/24.03     3) expat/2.6.2-cpeGNU-24.03
+
+The following have been reloaded with a version change:
+  1) partition/L => partition/G
+
+[2025-09-08 05:04:48] [marian] Marian v1.11.13 fde3d3c8 2023-12-04 18:04:48 +0200
+[2025-09-08 05:04:48] [marian] Running on nid007947 as process 18043 with command line:
+[2025-09-08 05:04:48] [marian] /users/tiedeman/.local/bin/marian-decoder -i /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/maxidl/nemotron-cc-english-run1/eng-swe/opusTCv20210807+bt_transformer-big_2022-03-17/nemotron-cc-english-run1-train-55.input.gz -c decoder.yml -b 4 -n1 -d 0 1 2 3 --quiet-translation -w -10000 --mini-batch 64 --maxi-batch 4 --maxi-batch-sort src --max-length 512 --max-length-crop
+[2025-09-08 05:07:00] [config] alignment: ""
+[2025-09-08 05:07:00] [config] allow-special: false
+[2025-09-08 05:07:00] [config] allow-unk: false
+[2025-09-08 05:07:00] [config] authors: false
+[2025-09-08 05:07:00] [config] beam-size: 4
+[2025-09-08 05:07:00] [config] bert-class-symbol: "[CLS]"
+[2025-09-08 05:07:00] [config] bert-mask-symbol: "[MASK]"
+[2025-09-08 05:07:00] [config] bert-masking-fraction: 0.15
+[2025-09-08 05:07:00] [config] bert-sep-symbol: "[SEP]"
+[2025-09-08 05:07:00] [config] bert-train-type-embeddings: true
+[2025-09-08 05:07:00] [config] bert-type-vocab-size: 2
+[2025-09-08 05:07:00] [config] best-deep: false
+[2025-09-08 05:07:00] [config] build-info: ""
+[2025-09-08 05:07:00] [config] char-conv-filters-num:
+[2025-09-08 05:07:00] [config]   - 200
+[2025-09-08 05:07:00] [config]   - 200
+[2025-09-08 05:07:00] [config]   - 250
+[2025-09-08 05:07:00] [config]   - 250
+[2025-09-08 05:07:00] [config]   - 300
+[2025-09-08 05:07:00] [config]   - 300
+[2025-09-08 05:07:00] [config]   - 300
+[2025-09-08 05:07:00] [config]   - 300
+[2025-09-08 05:07:00] [config] char-conv-filters-widths:
+[2025-09-08 05:07:00] [config]   - 1
+[2025-09-08 05:07:00] [config]   - 2
+[2025-09-08 05:07:00] [config]   - 3
+[2025-09-08 05:07:00] [config]   - 4
+[2025-09-08 05:07:00] [config]   - 5
+[2025-09-08 05:07:00] [config]   - 6
+[2025-09-08 05:07:00] [config]   - 7
+[2025-09-08 05:07:00] [config]   - 8
+[2025-09-08 05:07:00] [config] char-highway: 4
+[2025-09-08 05:07:00] [config] char-stride: 5
+[2025-09-08 05:07:00] [config] check-nan: false
+[2025-09-08 05:07:00] [config] cite: false
+[2025-09-08 05:07:00] [config] cpu-threads: 0
+[2025-09-08 05:07:00] [config] data-threads: 8
+[2025-09-08 05:07:00] [config] dec-cell: gru
+[2025-09-08 05:07:00] [config] dec-cell-base-depth: 2
+[2025-09-08 05:07:00] [config] dec-cell-high-depth: 1
+[2025-09-08 05:07:00] [config] dec-depth: 6
+[2025-09-08 05:07:00] [config] devices:
+[2025-09-08 05:07:00] [config]   - 0
+[2025-09-08 05:07:00] [config]   - 1
+[2025-09-08 05:07:00] [config]   - 2
+[2025-09-08 05:07:00] [config]   - 3
+[2025-09-08 05:07:00] [config] dim-emb: 1024
+[2025-09-08 05:07:00] [config] dim-rnn: 1024
+[2025-09-08 05:07:00] [config] dim-vocabs:
+[2025-09-08 05:07:00] [config]   - 54666
+[2025-09-08 05:07:00] [config]   - 54666
+[2025-09-08 05:07:00] [config] dump-config: ""
+[2025-09-08 05:07:00] [config] enc-cell: gru
+[2025-09-08 05:07:00] [config] enc-cell-depth: 1
+[2025-09-08 05:07:00] [config] enc-depth: 6
+[2025-09-08 05:07:00] [config] enc-type: bidirectional
+[2025-09-08 05:07:00] [config] factors-combine: sum
+[2025-09-08 05:07:00] [config] factors-dim-emb: 0
+[2025-09-08 05:07:00] [config] force-decode: false
+[2025-09-08 05:07:00] [config] gemm-type: float32
+[2025-09-08 05:07:00] [config] ignore-model-config: false
+[2025-09-08 05:07:00] [config] input:
+[2025-09-08 05:07:00] [config]   - /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/maxidl/nemotron-cc-english-run1/eng-swe/opusTCv20210807+bt_transformer-big_2022-03-17/nemotron-cc-english-run1-train-55.input.gz
+[2025-09-08 05:07:00] [config] input-types:
+[2025-09-08 05:07:00] [config]   []
+[2025-09-08 05:07:00] [config] interpolate-env-vars: false
+[2025-09-08 05:07:00] [config] layer-normalization: false
+[2025-09-08 05:07:00] [config] lemma-dependency: ""
+[2025-09-08 05:07:00] [config] lemma-dim-emb: 0
+[2025-09-08 05:07:00] [config] log: ""
+[2025-09-08 05:07:00] [config] log-level: info
+[2025-09-08 05:07:00] [config] log-time-zone: ""
+[2025-09-08 05:07:00] [config] max-length: 512
+[2025-09-08 05:07:00] [config] max-length-crop: true
+[2025-09-08 05:07:00] [config] max-length-factor: 3
+[2025-09-08 05:07:00] [config] maxi-batch: 4
+[2025-09-08 05:07:00] [config] maxi-batch-sort: src
+[2025-09-08 05:07:00] [config] mini-batch: 64
+[2025-09-08 05:07:00] [config] mini-batch-words: 0
+[2025-09-08 05:07:00] [config] models:
+[2025-09-08 05:07:00] [config]   - /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-swe/opusTCv20210807+bt_transformer-big_2022-03-17/opusTCv20210807+bt.spm32k-spm32k.transformer-big.model1.npz.best-perplexity.npz
+[2025-09-08 05:07:00] [config] n-best: false
+[2025-09-08 05:07:00] [config] no-spm-decode: false
+[2025-09-08 05:07:00] [config] normalize: 1
+[2025-09-08 05:07:00] [config] num-devices: 0
+[2025-09-08 05:07:00] [config] optimize: false
+[2025-09-08 05:07:00] [config] output: stdout
+[2025-09-08 05:07:00] [config] output-approx-knn:
+[2025-09-08 05:07:00] [config]   []
+[2025-09-08 05:07:00] [config] output-omit-bias: false
+[2025-09-08 05:07:00] [config] output-sampling:
+[2025-09-08 05:07:00] [config]   []
+[2025-09-08 05:07:00] [config] precision:
+[2025-09-08 05:07:00] [config]   - float32
+[2025-09-08 05:07:00] [config] quantize-range: 0
+[2025-09-08 05:07:00] [config] quiet: false
+[2025-09-08 05:07:00] [config] quiet-translation: true
+[2025-09-08 05:07:00] [config] relative-paths: false
+[2025-09-08 05:07:00] [config] right-left: false
+[2025-09-08 05:07:00] [config] seed: 0
+[2025-09-08 05:07:00] [config] shortlist:
+[2025-09-08 05:07:00] [config]   []
+[2025-09-08 05:07:00] [config] skip: false
+[2025-09-08 05:07:00] [config] skip-cost: false
+[2025-09-08 05:07:00] [config] stat-freq: 0
+[2025-09-08 05:07:00] [config] tied-embeddings: false
+[2025-09-08 05:07:00] [config] tied-embeddings-all: true
+[2025-09-08 05:07:00] [config] tied-embeddings-src: false
+[2025-09-08 05:07:00] [config] transformer-aan-activation: swish
+[2025-09-08 05:07:00] [config] transformer-aan-depth: 2
+[2025-09-08 05:07:00] [config] transformer-aan-nogate: false
+[2025-09-08 05:07:00] [config] transformer-decoder-autoreg: self-attention
+[2025-09-08 05:07:00] [config] transformer-decoder-dim-ffn: 0
+[2025-09-08 05:07:00] [config] transformer-decoder-ffn-depth: 0
+[2025-09-08 05:07:00] [config] transformer-depth-scaling: false
+[2025-09-08 05:07:00] [config] transformer-dim-aan: 2048
+[2025-09-08 05:07:00] [config] transformer-dim-ffn: 4096
+[2025-09-08 05:07:00] [config] transformer-ffn-activation: relu
+[2025-09-08 05:07:00] [config] transformer-ffn-depth: 2
+[2025-09-08 05:07:00] [config] transformer-guided-alignment-layer: last
+[2025-09-08 05:07:00] [config] transformer-heads: 16
+[2025-09-08 05:07:00] [config] transformer-no-projection: false
+[2025-09-08 05:07:00] [config] transformer-pool: false
+[2025-09-08 05:07:00] [config] transformer-postprocess: dan
+[2025-09-08 05:07:00] [config] transformer-postprocess-emb: d
+[2025-09-08 05:07:00] [config] transformer-postprocess-top: ""
+[2025-09-08 05:07:00] [config] transformer-preprocess: ""
+[2025-09-08 05:07:00] [config] transformer-rnn-projection: false
+[2025-09-08 05:07:00] [config] transformer-tied-layers:
+[2025-09-08 05:07:00] [config]   []
+[2025-09-08 05:07:00] [config] transformer-train-position-embeddings: false
+[2025-09-08 05:07:00] [config] tsv: false
+[2025-09-08 05:07:00] [config] tsv-fields: 0
+[2025-09-08 05:07:00] [config] type: transformer
+[2025-09-08 05:07:00] [config] ulr: false
+[2025-09-08 05:07:00] [config] ulr-dim-emb: 0
+[2025-09-08 05:07:00] [config] ulr-trainable-transformation: false
+[2025-09-08 05:07:00] [config] version: v1.10.24; 12a1bfa 2021-10-11 16:59:52 +0100
+[2025-09-08 05:07:00] [config] vocabs:
+[2025-09-08 05:07:00] [config]   - /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-swe/opusTCv20210807+bt_transformer-big_2022-03-17/opusTCv20210807+bt.spm32k-spm32k.vocab.yml
+[2025-09-08 05:07:00] [config]   - /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-swe/opusTCv20210807+bt_transformer-big_2022-03-17/opusTCv20210807+bt.spm32k-spm32k.vocab.yml
+[2025-09-08 05:07:00] [config] weights:
+[2025-09-08 05:07:00] [config]   []
+[2025-09-08 05:07:00] [config] word-penalty: 0
+[2025-09-08 05:07:00] [config] word-scores: false
+[2025-09-08 05:07:00] [config] workspace: -10000
+[2025-09-08 05:07:00] [config] Loaded model has been created with Marian v1.10.24; 12a1bfa 2021-10-11 16:59:52 +0100
+[2025-09-08 05:07:00] [data] Loading vocabulary from JSON/Yaml file /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-swe/opusTCv20210807+bt_transformer-big_2022-03-17/opusTCv20210807+bt.spm32k-spm32k.vocab.yml
+[2025-09-08 05:07:01] [data] Loading vocabulary from JSON/Yaml file /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-swe/opusTCv20210807+bt_transformer-big_2022-03-17/opusTCv20210807+bt.spm32k-spm32k.vocab.yml
+[2025-09-08 05:07:01] [MPI rank 0 out of 1]: GPU[0]
+[2025-09-08 05:07:01] [MPI rank 0 out of 1]: GPU[1]
+[2025-09-08 05:07:01] [MPI rank 0 out of 1]: GPU[2]
+[2025-09-08 05:07:01] [MPI rank 0 out of 1]: GPU[3]
+[2025-09-08 05:07:01] Loading model from /pfs/lustrep1/scratch/project_462000688/tiedeman/translate-fineweb/eng-swe/opusTCv20210807+bt_transformer-big_2022-03-17/opusTCv20210807+bt.spm32k-spm32k.transformer-big.model1.npz.best-perplexity.npz
+[2025-09-08 05:07:16] [memory] Extending reserved space to 55552 MB (device gpu2)
+[2025-09-08 05:07:16] [memory] Extending reserved space to 55552 MB (device gpu0)
+[2025-09-08 05:07:16] [memory] Extending reserved space to 55552 MB (device gpu1)
+[2025-09-08 05:07:16] [memory] Extending reserved space to 55552 MB (device gpu3)
+[2025-09-08 05:07:17] Loaded model config
+[2025-09-08 05:07:17] Loaded model config
+[2025-09-08 05:07:17] Loaded model config
+[2025-09-08 05:07:17] Loaded model config
+[2025-09-08 05:07:18] Loading scorer of type transformer as feature F0
+[2025-09-08 05:07:18] Loading scorer of type transformer as feature F0
+[2025-09-08 05:07:18] Loading scorer of type transformer as feature F0
+[2025-09-08 05:07:18] Loading scorer of type transformer as feature F0
+[2025-09-08 05:07:19] [memory] Reserving 886 MB, device gpu3
+[2025-09-08 05:07:19] [memory] Reserving 886 MB, device gpu1
+[2025-09-08 05:07:19] [memory] Reserving 886 MB, device gpu2
+[2025-09-08 05:07:19] [memory] Reserving 886 MB, device gpu0
+[2025-09-09 12:55:57] Total time: 114516.48567s wall
