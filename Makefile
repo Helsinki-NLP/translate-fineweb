@@ -15,7 +15,7 @@
 # upload data to allas (use project 2005815)
 #
 #    module load allas
-#    allas-conf
+#    allas-conf -k
 #    make TRG=xxx upload
 #
 #
@@ -97,6 +97,7 @@ FINEWEB_TXT     := $(sort \
 
 
 
+## languages in OpenEuroLLM
 
 OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 		gle glg cat ces swe tur bul \
@@ -111,7 +112,9 @@ OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 
 
 
-## nemotron-sample 100B
+##---------------------------------------------
+## targets for working with nemotron-cc 100B
+##---------------------------------------------
 
 .PHONY: %_nemotron100B
 %_nemotron100B:
@@ -119,10 +122,12 @@ OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 		CORPUS=nemotron-cc-translated \
 		FINEWEB_END=200 $(@:_nemotron100B=)
 
-mv-nemo:
-	rsync -av  /scratch/project_462000963/datasets/maxidl/nemotron-cc-english-run1/shards/*.jsonl HF/maxidl/nemotron-cc-english-run1/
+.PHONY: mv-nemotron
+mv-nemotron:
+	rsync -av /scratch/project_462000963/datasets/maxidl/nemotron-cc-english-run1/shards/*.jsonl HF/maxidl/nemotron-cc-english-run1/
 	pigz HF/maxidl/nemotron-cc-english-run1/*.jsonl
 
+## find missing files (files that are not in the released data)
 .PHONY: fineweb-find-missing
 nemotron100B-find-missing:
 	@for l in ${OELLM_LANGS}; do \
@@ -130,17 +135,38 @@ nemotron100B-find-missing:
 	  ${MAKE} -s TRG=$$l find-missing-release-files_nemotron100B; \
 	done
 
-
+## find missing files and translate
+.PHONY: nemotron100B-do-missing
 nemotron100B-do-missing:
 	@for l in ${OELLM_LANGS}; do \
 	  echo "checking $$l"; \
+	  ${MAKE} -s TRG=$$l move-missing-release-files_nemotron100B;
+	  ${MAKE} -s TRG=$$l prepare-input_nemotron100B;
 	  ${MAKE} -s TRG=$$l translate-jobs_nemotron100B; \
 	done
 
-#	  ${MAKE} -s TRG=$$l move-missing-release-files_nemotron100B;
-#	  ${MAKE} -s TRG=$$l prepare-input_nemotron100B;
+
+## extract all warc-record-ids from all files
+## and also check whether original and translation files differ
+.PHONY: nemotron100B-ids
+nemotron100B-ids:
+	@for l in ${OELLM_LANGS}; do \
+	  echo "extract IDs from $$l jsonl files"; \
+	  ${MAKE} TRG=$$l get-jsonl-ids_nemotron100B; \
+	  ${MAKE} TRG=$$l diff-jsonl-ids_nemotron100B; \
+	done
+
+.PHONY: nemotron100B-diffs
+nemotron100B-diffs:
+	@for l in ${OELLM_LANGS}; do \
+	  echo "diff IDs from $$l jsonl files"; \
+	  ${MAKE} -s TRG=$$l diff-jsonl-ids_nemotron100B; \
+	done
 
 
+## release files for nemotron-cc translations
+## also copy them to the Turku project
+.PHONY: nemotron100B-release
 nemotron100B-release:
 	@for l in ${OELLM_LANGS}; do \
 	  echo "releasing $$l"; \
@@ -151,12 +177,15 @@ nemotron100B-release:
 	  chgrp project_462000963 /scratch/project_462000963/users/tiedeman/nemotron-cc-translated/100B/opus-mt/$$l/*.gz; \
 	done
 
+## convert to OPUS format
+.PHONY: nemotron100B-opus-jobs
 nemotron100B-opus-jobs:
 	@for l in ${OELLM_LANGS}; do \
 	  ${MAKE} HPC_CORES=40 HPC_MEM=256g TRG=$$l opus_nemotron100B.submitcpu; \
 	done
 
-
+## upload the nemotron-cc data to allas
+.PHONY: nemotron100B-upload
 nemotron100B-upload:
 	for l in ${OELLM_LANGS}; do \
 	  ${MAKE} TRG=$$l upload_nemotron100B; \
@@ -164,8 +193,11 @@ nemotron100B-upload:
 
 
 
+
+##---------------------------------------------
 ## run targets for nemotron10K
 ## NOTE: sentence splitting is activated!
+##---------------------------------------------
 
 .PHONY: %_nemotron10K
 %_nemotron10K:
@@ -196,6 +228,9 @@ nemotron10K-upload:
 	done
 
 
+##---------------------------------------------
+## targets for fineweb-edu
+##---------------------------------------------
 
 fineweb-prepare:
 	for l in ${OELLM_LANGS}; do \
@@ -204,11 +239,6 @@ fineweb-prepare:
 
 fineweb-translate:
 	for l in ${OELLM_LANGS}; do \
-	  ${MAKE} TRG=$$l translate-jobs; \
-	done
-
-fineweb-translate2:
-	for l in ces swe; do \
 	  ${MAKE} TRG=$$l translate-jobs; \
 	done
 
@@ -227,7 +257,6 @@ fineweb-upload:
 	for l in ${OELLM_LANGS}; do \
 	  ${MAKE} TRG=$$l upload; \
 	done
-
 
 .PHONY: fineweb-find-missing
 fineweb-find-missing:
@@ -253,68 +282,16 @@ fineweb-opustrg-jobs:
 
 
 
-## new version of text extraction
-## (OBSOLETE)
 
-FINEWEB_TEXT_DIR := ${DATASET}/txt
-
-.PHONY: %_newtext
-%_newtext:
-	${MAKE} FINEWEB_TXT_DIR=${DATASET}/txt $(@:_newtext=)
-
-## old version of text extraction
-## (OBSOLETE)
-
-.PHONY: %_oldtext
-%_oldtext:
-	${MAKE} FINEWEB_TXT_DIR=${DATASET}/${SRC} $(@:_oldtext=)
-
-
-.PHONY: %_newtext2
-%_newtext2:
-	${MAKE} FINEWEB_TXT_DIR=${DATASET}/txt2 $(@:_newtext2=)
-
-
-
-
-# check-lengths: fineweb-edu/350BT/unreleased-2025-07-30/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00047.txt.sentlen \
-# 		fineweb-edu/350BT/txt/fineweb-edu_350BT_00047.txt.sentlen
-# 	paste $^ |\
-# 	perl -e 'while(<>){@a=split(/\t/);$$b = $$a[0] > $$a[1] ? $$a[1]/$$a[0] : $$a[0]/$$a[1];unshift(@a,$$b); print join("\t",@a)}' > $@
-
-# check-lengths-sorted: check-lengths
-# 	cat -n $< | sort -n -k2,2 > $@
-
+## OBSOLETE?
 
 check-lengths: fineweb-edu/350BT/unreleased-2025-07-30/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00047.txt.lencheck
 
 %.txt.lencheck: %.txt.gz
 	perl scripts/check-length-ratio.pl fineweb-edu/350BT/txt/$(notdir $<) $< > $@
 
-#	${MAKE} $(<:.gz=.sentlen) fineweb-edu/350BT/txt/$(notdir $(<:.gz=.sentlen))
-#	paste $(<:.gz=.sentlen) fineweb-edu/350BT/txt/$(notdir $(<:.gz=.sentlen)) |\
-#	perl -e 'while(<>){@a=split(/\t/);$$b = $$a[0] > $$a[1] ? $$a[1]/$$a[0] : $$a[0]/$$a[1];unshift(@a,$$b); print join("\t",@a)}' |\
-#	cat -n | sort -n -k2,2 > $@
-#	rm -f $(<:.gz=.sentlen) fineweb-edu/350BT/txt/$(notdir $(<:.gz=.sentlen))
-
-
-
 %.txt.sentlen: %.txt.gz
 	zcat $< | perl -e 'while(<>){@a=split(/\s+/);print scalar @a,"\n"}' > $@
-
-
-# eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00047.txt.gz
-
-#POSTPROCESS_MISSING = fineweb-edu/350BT/eng-deu/opusTCv20210807+bt-2021-12-08/fineweb-edu_350BT_00047.postprocessed.txt.gz \
-#		fineweb-edu/350BT/eng-ukr/opusTCv20210807+bt_transformer-big_2022-03-13/fineweb-edu_350BT_00010.postprocessed.txt.gz \
-#		fineweb-edu/350BT/eng-ukr/opusTCv20210807+bt_transformer-big_2022-03-13/fineweb-edu_350BT_00022.postprocessed.txt.gz
-
-POSTPROCESS_MISSING = fineweb-edu/350BT/eng-mkd/opusTCv20230926max50+bt+jhubc_transformer-big_2024-05-30/fineweb-edu_350BT_00037.postprocessed.txt.gz
-
-postprocess_missing: ${POSTPROCESS_MISSING}
-
-${POSTPROCESS_MISSING}: %.postprocessed.txt.gz: %.txt.gz
-	zcat $< | ${POST_PROCESS} gzip -c > $@
 
 
 
@@ -620,6 +597,10 @@ FINEWEB_TRANS_RELEASE_INFO := ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/README.md
 FINEWEB_ORIG_RELEASE_JSON    := $(patsubst %.gz,${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${SRC}/%.gz,${FINEWEB_JSONL})
 FINEWEB_ORIG_RELEASE_PARQUET := $(patsubst %.jsonl.gz,%.parquet,${FINEWEB_ORIG_RELEASE_JSON})
 
+## files with warcids
+FINEWEB_TRANS_RELEASE_JSONID := $(patsubst %.jsonl.gz,%.jsonl.ids,${FINEWEB_TRANS_RELEASE_JSON})
+FINEWEB_ORIG_RELEASE_JSONID  := $(patsubst %.jsonl.gz,%.jsonl.ids,${FINEWEB_ORIG_RELEASE_JSON})
+FINEWEB_TRANS_RELEASE_DIFF   := $(patsubst %.jsonl.gz,%.jsonl.diff,${FINEWEB_TRANS_RELEASE_JSON})
 
 ## OPUS files
 
@@ -1134,6 +1115,22 @@ ${FINEWEB_TRANS_RELEASE_EXAMPLE}: %.md: %.txt.gz
 		-t $< -l ${TRG} -m 10 > $@; \
 	fi
 
+
+.PHONY: get-jsonl-ids
+get-jsonl-ids: ${FINEWEB_ORIG_RELEASE_JSONID} ${FINEWEB_TRANS_RELEASE_JSONID}
+	@echo "done"
+
+.PHONY: diff-jsonl-ids
+diff-jsonl-ids: ${FINEWEB_TRANS_RELEASE_DIFF}
+	@echo "done"
+
+%.jsonl.ids: %.jsonl.gz
+	zcat $< | cut -f4 -d \" > $@
+
+${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.diff: \
+		${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${SRC}/%.jsonl.ids \
+		${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.ids
+	diff $^ > $@
 
 
 ## readme file for the released translations
