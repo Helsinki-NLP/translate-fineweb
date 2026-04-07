@@ -61,6 +61,9 @@ endif
 ifdef BROKEN_NODES
 	echo '#SBATCH --exclude=${BROKEN_NODES}' >> $@
 endif
+ifeq (${HPC_HOST},lumi)
+	echo '#SBATCH --gres=gpu:${NR_GPUS}' >> $@
+endif
 	echo '${HPC_EXTRA}' >> $@
 	echo '${HPC_EXTRA1}' >> $@
 	echo '${HPC_EXTRA2}' >> $@
@@ -70,21 +73,23 @@ endif
 	echo '${HPC_GPU_EXTRA3}' >> $@
 	echo '${LOAD_GPU_ENV}'           >> $@
 	echo 'cd $${SLURM_SUBMIT_DIR:-.}' >> $@
+	echo 'module list' >> $@
 	echo 'pwd' >> $@
 	echo 'echo "Starting at `date`"' >> $@
 ifeq (${HPC_HOST},lumi)
+	echo '/appl/local/csc/soft/ai/bin/gpu-energy --save' >> $@
+#	echo 'gpu-energy --save' >> $@
+	echo '${SCRIPTDIR}/gpu_usage.sh > $(SLURM_JOBNAME)${@:.submit=}.gpu-usage &' >> $@
+ifneq (${SKIP_CPU_BIND},1)
 # ifneq (${NR_GPUS},8)
 	echo 'CPU_BIND="mask_cpu:fe000000000000,fe00000000000000"' >> $@
 	echo 'CPU_BIND="$${CPU_BIND},fe0000,fe000000"' >> $@
 	echo 'CPU_BIND="$${CPU_BIND},fe,fe00"' >> $@
 	echo 'CPU_BIND="$${CPU_BIND},fe00000000,fe0000000000"' >> $@
-	echo '/appl/local/csc/soft/ai/bin/gpu-energy --save' >> $@
-#	echo 'gpu-energy --save' >> $@
-	echo '${SCRIPTDIR}/gpu_usage.sh > $(SLURM_JOBNAME)${@:.submit=}.gpu-usage &' >> $@
 	echo 'srun --cpu-bind=$${CPU_BIND} ${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
-# else
-# 	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
-# endif
+else
+	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@
+endif
 else
 #	echo 'srun ${MAKE} -j ${GPUJOB_HPC_JOBS} ${MAKEARGS} ${@:.submit=}' >> $@
 	echo '${MAKE} -j ${GPUJOB_HPC_JOBS} HPC_HOST=${HPC_HOST} ${MAKEARGS} ${@:.submit=}' >> $@

@@ -49,7 +49,7 @@ endif
 ## (SRC needs to be eng for now)
 
 SRC ?= eng
-TRG ?= deu
+TRG ?= fin
 
 LANGPAIR := ${SRC}-${TRG}
 
@@ -78,9 +78,24 @@ SENTENCE_SPLIT := 0
 # CORPUS      := nemotron-cc-10K-sample
 DATASET       := fineweb-edu/350BT
 CORPUS        := transweb-edu
-# CORPUS        := fineweb-edu
+# FINEWEB_START := 1
+# FINEWEB_END   := 50
+
+# FINEWEB_START := 51
+# FINEWEB_END   := 100
+
+# FINEWEB_START := 101
+# FINEWEB_START := 153
+# FINEWEB_START := 193
+# FINEWEB_START := 216
+# FINEWEB_START := 257
+# FINEWEB_START := 297
+# FINEWEB_START := 336
 FINEWEB_START := 1
-FINEWEB_END   := 50
+FINEWEB_END   := 470
+
+
+
 
 ## data sources (in original jsonl and in plain text for translation)
 ## (only selected shards)
@@ -91,9 +106,11 @@ FINEWEB_JSONL   := $(wordlist ${FINEWEB_START},${FINEWEB_END},\
 			$(sort $(notdir $(wildcard ${FINEWEB_DIR}/*.gz))))
 
 FINEWEB_TXT_DIR := ${DATASET}/txt
-FINEWEB_TXT     := $(sort \
-			$(patsubst %.jsonl.gz,${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_JSONL}) \
-			$(wildcard ${FINEWEB_TXT_DIR}/*.txt.gz))
+FINEWEB_TXT     := $(sort $(patsubst %.jsonl.gz,${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_JSONL}))
+
+#FINEWEB_TXT     := $(sort \
+#			$(patsubst %.jsonl.gz,${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_JSONL}) \
+#			$(wildcard ${FINEWEB_TXT_DIR}/*.txt.gz))
 
 
 
@@ -110,25 +127,92 @@ OELLM_LANGS = 	deu fin nob nno spa mlt ukr \
 # lav = lvs in FLORES200 (not on dashboard?)
 
 
-
-
 ##---------------------------------------------
 ## targets for working with nemotron-cc 100B
 ##---------------------------------------------
 
+
+## first sample:
+#
+# NEMOTRON_CC_DATA  := maxidl/nemotron-cc-english-run1
+# NEMOTRON_CC_START := 1
+# NEMOTRON_CC_END   := 200
+
+
+
+## second sample:
+
+NEMOTRON_CC_DATA  := maxidl/nemotron-cc-english-run2
+NEMOTRON_CC_START := 1
+NEMOTRON_CC_END   := 500
+
+.PHONY: download-nemotron-run2
+download-nemotron-run2:
+	mkdir -p HF/maxidl/nemotron-cc-english-run2
+	python3 scripts/hf_to_jsonl.py \
+		-d MultiSynt/Nemotron-CC-sample-2 \
+		-o HF/maxidl/nemotron-cc-english-run2/nemotron-cc-english-run2-train-
+
+
+RUN2_DONE = fin ukr est swe ces tur ron bul gle
+
+RUN2_LANGS = 	cat glg dan lav lit nob nno slk \
+		hun isl pol slv hrv mkd bos por \
+		nld ita spa deu fra srp_Cyrl eus \
+		mlt sqi kat
+
+.PHONY: translatejobs-nemotron-run2
+translatejobs-nemotron-run2:
+	for l in ${RUN2_LANGS}; do \
+	  ${MAKE} TRG=$$l ct2-jobs_nemotron100B; \
+	done
+
+.PHONY: release-nemotron-data-run2
+release-nemotron-data-run2:
+	for l in ${RUN2_LANGS}; do \
+	  ${MAKE} TRG=$$l release-data-ct2_nemotron100B; \
+	done
+
+.PHONY: release-data-ct2
+release-data-ct2:
+	${MAKE} FINEWEB_TRANS_DIR=${FINEWEB_CT2_DIR} release-data
+
+
+
+## add suffix '-run1' for doing things with the first set of sampled data
+
+.PHONY: %-run1
+%-run1:
+	${MAKE} NEMOTRON_CC_DATA=maxidl/nemotron-cc-english-run1 \
+		NEMOTRON_CC_START=1 \
+		NEMOTRON_CC_END=200 \
+	$(@:-run1=)
+
 .PHONY: %_nemotron100B
 %_nemotron100B:
-	${MAKE} DATASET=maxidl/nemotron-cc-english-run1 \
+	${MAKE} DATASET=${NEMOTRON_CC_DATA} \
 		CORPUS=nemotron-cc-translated \
-		FINEWEB_END=200 $(@:_nemotron100B=)
+		FINEWEB_START=${NEMOTRON_CC_START} \
+		FINEWEB_END=${NEMOTRON_CC_END} \
+	$(@:_nemotron100B=)
+
+
+.PHONY: nemotron100B-prepare
+nemotron100B-prepare:
+	@for l in ${OELLM_LANGS}; do \
+	  echo "prepare $$l"; \
+	  ${MAKE} -s TRG=$$l prepare-model_nemotron100B; \
+	  ${MAKE} -s TRG=$$l convert-model_nemotron100B; \
+	done
+
 
 .PHONY: mv-nemotron
 mv-nemotron:
-	rsync -av /scratch/project_462000963/datasets/maxidl/nemotron-cc-english-run1/shards/*.jsonl HF/maxidl/nemotron-cc-english-run1/
-	pigz HF/maxidl/nemotron-cc-english-run1/*.jsonl
+	rsync -av /scratch/project_462000963/datasets/${NEMOTRON_CC_DATA}/shards/*.jsonl HF/${NEMOTRON_CC_DATA}/
+	pigz HF/${NEMOTRON_CC_DATA}/*.jsonl
 
 ## find missing files (files that are not in the released data)
-.PHONY: fineweb-find-missing
+.PHONY: nemotron100B-find-missing
 nemotron100B-find-missing:
 	@for l in ${OELLM_LANGS}; do \
 	  echo "checking $$l"; \
@@ -172,7 +256,7 @@ nemotron100B-release:
 	  echo "releasing $$l"; \
 	  ${MAKE} TRG=$$l release-data_nemotron100B; \
 	  mkdir -p /scratch/project_462000963/users/tiedeman/nemotron-cc-translated/100B/opus-mt/$$l; \
-	  rsync -av maxidl/nemotron-cc-english-run1/translated/jsonl/$$l/nemotron-cc-english-run1-train-*.jsonl.gz /scratch/project_462000963/users/tiedeman/nemotron-cc-translated/100B/opus-mt/$$l/; \
+	  rsync -av ${NEMOTRON_CC_DATA}/translated/jsonl/$$l/nemotron-cc-english-run1-train-*.jsonl.gz /scratch/project_462000963/users/tiedeman/nemotron-cc-translated/100B/opus-mt/$$l/; \
 	  chgrp project_462000963 /scratch/project_462000963/users/tiedeman/nemotron-cc-translated/100B/opus-mt/$$l; \
 	  chgrp project_462000963 /scratch/project_462000963/users/tiedeman/nemotron-cc-translated/100B/opus-mt/$$l/*.gz; \
 	done
@@ -191,6 +275,18 @@ nemotron100B-upload:
 	  ${MAKE} TRG=$$l upload_nemotron100B; \
 	done
 
+.PHONY: nemotron100B-mt-table
+nemotron100B-mt-table:
+	for l in $(sort ${OELLM_LANGS}); do \
+	  echo -n "| $$l | ["; \
+	  grep 'translation model' ${NEMOTRON_CC_DATA}/translated/txt/$$l/README.md | cut -f2- -d: | sed 's/ //g' | tr "\n" ']';\
+	  echo -n "(https://opus.nlpl.eu/legacy/dashboard/index.php?scoreslang=eng-$$l&pkg=opusmt&model="; \
+	  grep 'translation model' ${NEMOTRON_CC_DATA}/translated/txt/$$l/README.md | \
+	  cut -f2- -d: | sed 's/ //g;s/\+/\%2B/g;' | tr "\n" ')';\
+	  echo -n ' | [download]('; \
+	  grep URL ${NEMOTRON_CC_DATA}/translated/txt/$$l/README.md | cut -f2- -d: | sed 's/ //g' | tr "\n" ')'; \
+	  echo ' |'; \
+	done
 
 
 
@@ -204,6 +300,7 @@ nemotron100B-upload:
 	${MAKE} SENTENCE_SPLIT=1 DATASET=spyysalo/nemotron-cc-10K-sample CORPUS=nemotron-cc-10K-sample $(@:_nemotron10K=)
 
 
+.PHONY: nemotron10K
 nemotron10K:
 	for l in ${OELLM_LANGS}; do \
 	  ${MAKE} TRG=$$l prepare_nemotron10K; \
@@ -212,16 +309,19 @@ nemotron10K:
 	  ${MAKE} TRG=$$l translate-jobs_nemotron10K; \
 	done
 
+.PHONY: nemotron10K-release
 nemotron10K-release:
 	for l in ${OELLM_LANGS}; do \
 	  ${MAKE} TRG=$$l release-data_nemotron10K; \
 	done
 
+.PHONY: nemotron10K-opus
 nemotron10K-opus:
 	for l in ${OELLM_LANGS}; do \
 	  ${MAKE} TRG=$$l opus_nemotron10K; \
 	done
 
+.PHONY: nemotron10K-upload
 nemotron10K-upload:
 	for l in ${OELLM_LANGS}; do \
 	  ${MAKE} TRG=$$l upload_nemotron10K; \
@@ -241,6 +341,12 @@ fineweb-translate:
 	for l in ${OELLM_LANGS}; do \
 	  ${MAKE} TRG=$$l translate-jobs; \
 	done
+
+fineweb-cpu-translate:
+	for l in ${OELLM_LANGS}; do \
+	  ${MAKE} TRG=$$l translate-cpujobs; \
+	done
+
 
 .PHONY: fineweb-releases-job
 fineweb-releases-job:
@@ -367,6 +473,10 @@ prepare-job-%:
 .PHONY: translate-job
 translate-job: prepare-first
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} translate-first.${TRANSLATE_JOB_TYPE}
+
+.PHONY: translate-cpujob
+translate-cpujob: prepare-first
+	${MAKE} ${CPU_TRANSLATE_JOB_OPTIONS} translate-first.submitcpu
 
 .PHONY: translate-job-%
 translate-job-%:
@@ -507,9 +617,6 @@ translate-int8-cpujob-%:
 ct2-job: prepare-model convert-model
 	${MAKE} ${CT2_JOB_OPTIONS} ct2-first.${CT2_JOB_TYPE}
 
-.PHONY: ct2-jobs
-ct2-jobs: ${FINEWEB_CT2_JOBS}
-
 .PHONY: ct2-job-%
 ct2-job-%:
 	${MAKE} ${CT2_JOB_OPTIONS} $(patsubst ct2-job-%,%-ct2,$@).${CT2_JOB_TYPE}
@@ -523,8 +630,7 @@ ct2-job-%:
 # DASHBOARD_METRIC  := spbleu
 DASHBOARD_TESTSET := flores200-devtest
 DASHBOARD_METRIC  := bleu
-# DASHBOARD_URL     := https://opus.nlpl.eu/dashboard/api.php
-DASHBOARD_URL     := https://opus.nlpl.eu/mt/api.php
+DASHBOARD_URL     := https://opus.nlpl.eu/legacy/dashboard/api.php
 STORAGE_HOME      := https://object.pouta.csc.fi
 
 ifeq (${TRG},lav)
@@ -573,8 +679,10 @@ FINEWEB_TRANS_DIR  := ${DATASET}/${LANGPAIR}/${MODELNAME}
 FINEWEB_INPUT      := $(patsubst ${FINEWEB_TXT_DIR}/%.txt.gz,${FINEWEB_TRANS_DIR}/%.input.gz,${FINEWEB_TXT})
 FINEWEB_TRANS      := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_DIR}/%,${FINEWEB_TXT})
 
+FINEWEB_TXT_JOBS   := $(addsuffix -job,${FINEWEB_TXT})
 FINEWEB_INPUT_JOBS := $(addsuffix -job,${FINEWEB_INPUT})
 FINEWEB_TRANS_JOBS := $(addsuffix -job,${FINEWEB_TRANS})
+FINEWEB_TRANS_CPUJOBS := $(addsuffix -cpujob,${FINEWEB_TRANS})
 
 
 ## in case of broken translation jobs: missing translations are created here
@@ -591,16 +699,27 @@ FINEWEB_TRANS_RELEASE_SRC  := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_TRANS_RE
 FINEWEB_TRANS_RELEASE_TRG  := $(patsubst ${FINEWEB_TRANS_DIR}/%,${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%,${FINEWEB_TRANS})
 FINEWEB_TRANS_RELEASE_JSON := $(patsubst ${FINEWEB_TRANS_DIR}/%.txt.gz,${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${TRG}/%.jsonl.gz,${FINEWEB_TRANS})
 FINEWEB_TRANS_RELEASE_PARQUET := $(patsubst %.jsonl.gz,%.parquet,${FINEWEB_TRANS_RELEASE_JSON})
+FINEWEB_TRANS_RELEASE_COUNTS  := $(patsubst %.jsonl.gz,%.count,${FINEWEB_TRANS_RELEASE_JSON})
 FINEWEB_TRANS_RELEASE_EXAMPLE := $(patsubst %.txt.gz,%.md,${FINEWEB_TRANS_RELEASE_TRG})
 FINEWEB_TRANS_RELEASE_INFO := ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/README.md
 
 FINEWEB_ORIG_RELEASE_JSON    := $(patsubst %.gz,${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${SRC}/%.gz,${FINEWEB_JSONL})
 FINEWEB_ORIG_RELEASE_PARQUET := $(patsubst %.jsonl.gz,%.parquet,${FINEWEB_ORIG_RELEASE_JSON})
+FINEWEB_ORIG_RELEASE_COUNTS  := $(patsubst %.jsonl.gz,%.count,${FINEWEB_ORIG_RELEASE_JSON})
 
 ## files with warcids
 FINEWEB_TRANS_RELEASE_JSONID := $(patsubst %.jsonl.gz,%.jsonl.ids,${FINEWEB_TRANS_RELEASE_JSON})
 FINEWEB_ORIG_RELEASE_JSONID  := $(patsubst %.jsonl.gz,%.jsonl.ids,${FINEWEB_ORIG_RELEASE_JSON})
 FINEWEB_TRANS_RELEASE_DIFF   := $(patsubst %.jsonl.gz,%.jsonl.diff,${FINEWEB_TRANS_RELEASE_JSON})
+
+
+## bicleaner AI scores
+
+FINEWEB_TRANS_RELEASE_SCORES     := $(patsubst %.txt.gz,%.scores.gz,$(wildcard ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/*.txt.gz))
+FINEWEB_TRANS_RELEASE_SCORE      ?= $(firstword ${FINEWEB_TRANS_RELEASE_SCORES})
+FINEWEB_TRANS_RELEASE_TSV        := $(patsubst %.scores.gz,%.tsv,${FINEWEB_TRANS_RELEASE_SCORES})
+FINEWEB_TRANS_RELEASE_SCORE_JOBS := $(patsubst %,%_job,${FINEWEB_TRANS_RELEASE_SCORES})
+
 
 ## OPUS files
 
@@ -623,7 +742,7 @@ FINEWEB_INT8_JOBS  := $(addsuffix -job,${FINEWEB_INT8})
 
 FINEWEB_CT2_DIR  := ${DATASET}/ct2/${LANGPAIR}/${MODELNAME}
 FINEWEB_CT2      := $(patsubst ${FINEWEB_TXT_DIR}/%,${FINEWEB_CT2_DIR}/%,${FINEWEB_TXT})
-FINEWEB_CT2_JOBS := $(addsuffix -ct2-job,${FINEWEB_CT2})
+FINEWEB_CT2_JOBS := $(addsuffix -ct2_job,${FINEWEB_CT2})
 
 
 ## make sure that translation files are not deleted
@@ -637,14 +756,35 @@ FINEWEB_CT2_JOBS := $(addsuffix -ct2-job,${FINEWEB_CT2})
 .PHONY: translate-jobs
 translate-jobs: ${FINEWEB_TRANS_JOBS}
 
+.PHONY: translate-cpujobs
+translate-cpujobs: ${FINEWEB_TRANS_CPUJOBS}
+
 .PHONY: ${FINEWEB_TRANS_JOBS}
 ${FINEWEB_TRANS_JOBS}:
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(@:-job=).${TRANSLATE_JOB_TYPE}
+
+.PHONY: ${FINEWEB_TRANS_CPUJOBS}
+${FINEWEB_TRANS_CPUJOBS}:
+	${MAKE} ${CPU_TRANSLATE_JOB_OPTIONS} $(@:-cpujob=).submitcpu
 
 .PHONY: ${FINEWEB_INPUT_JOBS}
 ${FINEWEB_INPUT_JOBS}:
 	${MAKE} HPC_CORES=1 HPC_MEM=4g HPC_TIME=2:00 $(@:-job=).submitcpu
 
+
+
+## start translation jobs with quantized models (ctranslate2 or marian)
+
+.PHONY: ct2-jobs
+ct2-jobs: ${FINEWEB_CT2_JOBS}
+
+.PHONY: ct2-bigjobs
+ct2-bigjobs:
+	${MAKE} CT2_JOB_OPTIONS="${CT2_BIGJOB_OPTIONS}" ct2-jobs
+
+.PHONY: ${FINEWEB_CT2_JOBS}
+${FINEWEB_CT2_JOBS}:
+	${MAKE} ${CT2_JOB_OPTIONS} $(@:-ct2_job=).${CT2_JOB_TYPE}
 
 .PHONY: translate-int8-jobs
 translate-int8-jobs: ${FINEWEB_INT8_JOBS}
@@ -652,6 +792,7 @@ translate-int8-jobs: ${FINEWEB_INT8_JOBS}
 .PHONY: ${FINEWEB_INT8_JOBS}
 ${FINEWEB_INT8_JOBS}:
 	${MAKE} ${TRANSLATE_JOB_OPTIONS} $(@:-job=).${TRANSLATE_JOB_TYPE}
+
 
 
 ## high-level targets for creating parallel release data
@@ -668,6 +809,9 @@ release-txtdata: ${FINEWEB_TRANS_RELEASE_SRC} ${FINEWEB_TRANS_RELEASE_TRG}
 
 .PHONY: release-json
 release-json: ${FINEWEB_TRANS_RELEASE_JSON}
+
+.PHONY: release-count
+release-count: ${FINEWEB_TRANS_RELEASE_COUNTS} ${FINEWEB_ORIG_RELEASE_COUNTS}
 
 .PHONY: release-parquet
 release-parquet: ${FINEWEB_TRANS_RELEASE_PARQUET} ${FINEWEB_ORIG_RELEASE_PARQUET}
@@ -721,6 +865,9 @@ prepare-input: ${FINEWEB_INPUT}
 .PHONY: prepare-jobs
 prepare-jobs: ${FINEWEB_INPUT_JOBS}
 
+.PHONY: prepare-txt-jobs
+prepare-txt-jobs: ${FINEWEB_TXT_JOBS}
+
 
 
 
@@ -765,6 +912,27 @@ translate-missing: ${FINEWEB_MISSING_TRANS}
 
 
 ##---------------------------------------
+## score translations with bicleaner scores
+##---------------------------------------
+
+.PHONY: bicleaner-score-job
+bicleaner-score-job:
+	${MAKE} ${SCORE_JOB_OPTIONS} ${FINEWEB_TRANS_RELEASE_SCORE}.${SCORE_JOB_TYPE}
+
+.PHONY: bicleaner-score-jobs
+bicleaner-score-jobs: ${FINEWEB_TRANS_RELEASE_SCORE_JOBS}
+
+${FINEWEB_TRANS_RELEASE_SCORE_JOBS}:
+	${MAKE} ${SCORE_JOB_OPTIONS} $(@:_job=).${SCORE_JOB_TYPE}
+
+.PHONY: bicleaner-scores
+bicleaner-scores: ${FINEWEB_TRANS_RELEASE_SCORES}
+
+.PHONY: bicleaner-score-first
+bicleaner-score-first: $(firstword ${FINEWEB_TRANS_RELEASE_SCORES})
+
+
+##---------------------------------------
 ## targets for translating with quantized models
 ##---------------------------------------
 
@@ -795,10 +963,6 @@ ct2-first: prepare-model convert-model $(firstword ${FINEWEB_CT2})
 .PHONY: %-ct2
 %-ct2: prepare-model convert-model
 	${MAKE} $(word $(@:-ct2=),${FINEWEB_CT2})
-
-.PHONY: ${FINEWEB_CT2_JOBS}
-${FINEWEB_CT2_JOBS}:
-	${MAKE} ${CT2_JOB_OPTIONS} $(@:-job=).${CT2_JOB_TYPE}
 
 
 
@@ -949,20 +1113,21 @@ ifneq (${MODELZIP},)
 ifeq (${MODELTYPE},HPLT-MT-models)
 	spm_export_vocab --model ${LANGPAIR}/${MODELNAME}/source.spm > ${LANGPAIR}/${MODELNAME}/vocab.txt
 	cut -f1 ${LANGPAIR}/${MODELNAME}/vocab.txt | scripts/vocab2yaml.py > ${LANGPAIR}/${MODELNAME}/vocab.yml
-	ct2-marian-converter \
+	${LOAD_CT2_ENV} ct2-marian-converter \
 		--quantization int8 \
 		--model_path ${LANGPAIR}/${MODELNAME}/model.npz \
 		--vocab_paths ${LANGPAIR}/${MODELNAME}/vocab.yml ${LANGPAIR}/${MODELNAME}/vocab.yml \
 		--output_dir $(dir $@)
 else
-	ct2-opus-mt-converter --quantization int8 --model_dir $(dir $<) --output_dir $(dir $@)
+	${LOAD_CT2_ENV} ct2-opus-mt-converter --quantization int8 --model_dir $(dir $<) --output_dir $(dir $@)
 endif
 endif
 
 
 ## tokenize source language (input files)
 
-${TMPDIR}/${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
+# ${TMPDIR}/${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
+${FINEWEB_CT2_DIR}/%.input: ${FINEWEB_TXT_DIR}/%.txt.gz
 	mkdir -p ${dir $@}
 ifeq (${MODELTYPE},HPLT-MT-models)
 	gzip -cd < $< | spm_encode --model ${LANGPAIR}/${MODELNAME}/source.spm > $@
@@ -973,8 +1138,8 @@ endif
 
 ## translate
 
-MODEL_CT2_DIR := ct2/${LANGPAIR}/${MODELNAME}
-MODEL_SRC_SPM := ${LANGPAIR}/${MODELNAME}/source.spm
+MODEL_CT2_DIR := ${PWD}/ct2/${LANGPAIR}/${MODELNAME}
+MODEL_SRC_SPM := ${PWD}/${LANGPAIR}/${MODELNAME}/source.spm
 
 
 CT2_WORKERS    ?= 4
@@ -982,13 +1147,14 @@ CT2_DEVICE     ?= cpu
 CT2_BEAM_SIZE  ?= 4
 CT2_BATCH_SIZE ?= 64
 
-${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
+# ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
+${FINEWEB_CT2}: %.txt.gz: %.input
 	${MAKE} prepare-model
 	${MAKE} convert-model
 	mkdir -p ${TMPDIR}/$(dir $@)
-	${LOAD_CT2_ENV} python3 scripts/translate_file.py \
+	${LOAD_CT2_ENV} python3 ${PWD}/scripts/translate_file.py \
 		-i $< \
-		-o ${TMPDIR}/${@:.gz=} \
+		-o ${@:.gz=} \
 		-m ${MODEL_CT2_DIR} \
 		-s ${MODEL_SRC_SPM} \
 		-d ${CT2_DEVICE} \
@@ -996,8 +1162,9 @@ ${FINEWEB_CT2}: %.txt.gz: ${TMPDIR}/%.input
 		-b ${CT2_BEAM_SIZE} \
 		-n ${CT2_BATCH_SIZE}
 	mkdir -p $(dir $@)
-	cat ${TMPDIR}/${@:.gz=} | sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' | gzip -c > $@
-	rm -f ${TMPDIR}/${@:.gz=}
+	cat ${@:.gz=} | sed 's/ //g;s/▁/ /g' | sed 's/^ *//;s/ *$$//' \
+	| perl ${PWD}/scripts/convert_hexcodes.pl | gzip -c > $@
+	rm -f ${@:.gz=} $<
 
 
 ## convert to OPUS XML
@@ -1070,12 +1237,46 @@ ${FINEWEB_TRANS_RELEASE_TRG}: # ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%: ${FIN
 	     else \
 	         echo "- incomplete translations ($$i != $$o) for $$I and $$O"; \
 	     fi \
+	   elif [ -e $$O ] && [ -e $$T ]; then \
+	     echo "check output length for $$O"; \
+	     o=`gzip -cd $$O | wc -l`; \
+	     t=`gzip -cd $$T | wc -l`; \
+	     if [ $$o -eq $$t ]; then \
+	       echo "- translations in $(notdir $@) have the same length as original text data"; \
+	       mkdir -p $(dir $@); \
+	       rsync $$O $@; \
+	     else \
+	       echo "- different lengths ($$t != $$o) for $$T and $$O"; \
+	     fi \
 	   fi )
 
 
 ${FINEWEB_TRANS_RELEASE_SRC}: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/%: ${FINEWEB_TXT_DIR}/%
 	mkdir -p $(dir $@)
 	rsync $< $@
+
+
+
+.INTERMEDIATE: ${FINEWEB_TRANS_RELEASE_TSV}
+
+${FINEWEB_TRANS_RELEASE_SCORES}: %.scores.gz: %.tsv
+	${SCORE_ENV} bicleaner-ai-classify \
+		--scol 1 --tcol 2 \
+		--score_only -t ${TRG2} \
+		tmp.ende tmp.classified \
+		bitextor/bicleaner-ai-full-en-xx
+	gzip -f ${@:.gz=}
+
+#		$< ${@:.gz=} \
+
+
+#	paste <(gzip -cd ${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/$(notdir $<)) <(gzip -cd $<) > $@.tsv
+#	rm -f $@.tsv
+
+${FINEWEB_TRANS_RELEASE_TSV}: ${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.tsv: \
+				${FINEWEB_TRANS_RELEASE_DIR}/txt/${SRC}/%.txt.gz \
+				${FINEWEB_TRANS_RELEASE_DIR}/txt/${TRG}/%.txt.gz
+	paste <(gzip -cd $(firstword $^)) <(gzip -cd $(lastword $^)) > $@
 
 
 ## translations merged into jsonl files
@@ -1105,6 +1306,10 @@ ${FINEWEB_ORIG_RELEASE_JSON}: ${FINEWEB_TRANS_RELEASE_DIR}/jsonl/${SRC}/%.gz: ${
 	if [ -e $< ]; then \
 	  ${PYTHONENV} python scripts/jsonl_to_parquet.py -i $< -o $@; \
 	fi
+
+%.count: %.jsonl.gz
+	pigz -cd < $< | wc -l > $@
+
 
 ${FINEWEB_TRANS_RELEASE_EXAMPLE}: %.md: %.txt.gz
 	if [ -e $< ]; then \
@@ -1193,7 +1398,7 @@ endif
 	done
 
 
-## for adding stats for plan text files: replace with
+## for adding stats for plain text files: replace with
 #
 #	     echo -n "* [$$d](${STORAGE_URL}$$d): "       >> $@; \
 #	     echo "get stats for $$d"; \

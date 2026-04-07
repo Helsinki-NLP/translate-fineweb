@@ -30,15 +30,16 @@ TRANSLATE_JOB_TYPE := submit
 ## NOTE: beam size is reduced to 1
 ## NOTE: memory will only be sufficient for transformer-base models
 
-# TRANSLATE_JOB_OPTIONS := HPC_CORES=128 \
+# CPU_TRANSLATE_JOB_OPTIONS := HPC_CORES=128 \
 # 			HPC_MEM=232g \
 # 			HPC_TIME=36:00 \
 # 			MARIAN_BEAM_SIZE=1
-# TRANSLATE_JOB_TYPE    := submitcpu
+# CPU_TRANSLATE_JOB_TYPE    := submitcpu
+
 
 ## reduce number of cores to 32 for transformer-big models:
-# TRANSLATE_JOB_OPTIONS := HPC_CORES=32 HPC_MEM=224g HPC_TIME=24:00 MARIAN_BEAM_SIZE=1
-# TRANSLATE_JOB_TYPE    := submitcpu
+CPU_TRANSLATE_JOB_OPTIONS := HPC_CORES=32 HPC_MEM=224g HPC_TIME=24:00 MARIAN_BEAM_SIZE=1
+CPU_TRANSLATE_JOB_TYPE    := submitcpu
 
 
 

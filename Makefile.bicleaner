@@ -1,0 +1,130 @@
+#-*-makefile-*-
+
+
+SRC := eng
+TRG ?= deu
+
+LANGS = deu fin nob nno spa mlt ukr \
+	gle glg cat ces swe tur bul \
+	lav lit slk nld dan ell est fra \
+	hrv hun ita pol por ron \
+	slv eus bos isl kat \
+	mkd sqi srp_Cyrl
+
+
+# DATASET          := fineweb-edu/350BT
+DATASET            := maxidl/nemotron-cc-english-run1
+
+
+## bicleaner AI scores
+
+TRANS_RELEASE_DIR        := ${DATASET}/translated
+TRANS_RELEASE_SCORES     := $(patsubst %.txt.gz,%.scores.gz,$(wildcard ${TRANS_RELEASE_DIR}/txt/${TRG}/*.txt.gz))
+TRANS_RELEASE_SCORE      ?= $(firstword ${TRANS_RELEASE_SCORES})
+TRANS_RELEASE_TSV        := $(patsubst %.scores.gz,%.tsv,${TRANS_RELEASE_SCORES})
+TRANS_RELEASE_SCORE_JOBS := $(patsubst %,%_job,${TRANS_RELEASE_SCORES})
+
+
+MAKE := make -f Makefile.bicleaner
+
+
+
+.PHONY: all
+all:
+	for t in ${LANGS}; do ${MAKE} TRG=$$l bicleaner-score-jobs; done
+
+##---------------------------------------
+## score translations with bicleaner scores
+##---------------------------------------
+
+.PHONY: bicleaner-score-job
+bicleaner-score-job:
+	${MAKE} ${TRANS_RELEASE_SCORE}.submit
+
+.PHONY: bicleaner-score-jobs
+bicleaner-score-jobs: ${TRANS_RELEASE_SCORE_JOBS}
+
+${TRANS_RELEASE_SCORE_JOBS}:
+	${MAKE} $(@:_job=).submit
+
+.PHONY: bicleaner-scores
+bicleaner-scores: ${TRANS_RELEASE_SCORES}
+
+.PHONY: bicleaner-score-first
+bicleaner-score-first: $(firstword ${TRANS_RELEASE_SCORES})
+
+
+.INTERMEDIATE: ${TRANS_RELEASE_TSV}
+
+TRG2 := $(shell iso639 -2 -k ${TRG})
+
+${TRANS_RELEASE_SCORES}: %.scores.gz: %.tsv
+	${SCORE_ENV} bicleaner-ai-classify \
+		--scol 1 --tcol 2 \
+		--score_only -t ${TRG2} \
+		$< $(@:.gz=) \
+		bitextor/bicleaner-ai-full-en-xx
+	gzip -f ${@:.gz=}
+
+
+
+##---------------------------------------
+## phony target suffixes for selecting
+## a different data collection
+##---------------------------------------
+
+
+.PHONY: %_nemotron
+%_nemotron:
+	${MAKE} DATASET=maxidl/nemotron-cc-english-run1 $(@:_nemotron=)
+
+.PHONY: %_fineweb
+%_fineweb:
+	${MAKE} DATASET=fineweb-edu/350BT $(@:_fineweb=)
+
+
+
+##---------------------------------------
+## submit a slurm job
+## works only on LUMI
+##---------------------------------------
+
+WHOAMI := ${shell whoami}
+SLURM_MAX_NR_JOBS := 200
+
+%.submit:
+	mkdir -p $(dir $@)
+	while [ `squeue -u ${WHOAMI} | wc -l` -gt ${SLURM_MAX_NR_JOBS} ]; do \
+	  echo "waiting for space in the queue";\
+	  sleep 1; \
+	done
+	mkdir -p $(dir $@)
+	echo '#!/bin/bash' >$@
+	echo '' >>$@
+	echo '#SBATCH -A project_462000964' >>$@
+	echo '#SBATCH -J bicleaner' >>$@
+	echo '#SBATCH -o bicleaner.%j.out' >>$@
+	echo '#SBATCH -e bicleaner.%j.err' >>$@
+	echo '#SBATCH --partition=standard-g' >>$@  
+	echo '#SBATCH --nodes=1' >>$@
+	echo '#SBATCH --cpus-per-task=8' >>$@
+	echo '#SBATCH --mem=24G' >>$@
+	echo '#SBATCH --time=2-00:00:00' >>$@
+	echo '#SBATCH --gres=gpu:1' >>$@
+	echo '' >>$@
+	echo 'echo "Starting at `date`"' >>$@
+	echo '' >>$@
+	echo '# stops the script when encountering an error' >>$@
+	echo '# (useful if running several commands in the same script)' >>$@
+	echo 'set -e' >>$@
+	echo '' >>$@
+	echo 'module load CrayEnv rocm' >>$@
+	echo 'module list' >>$@
+	echo '' >>$@
+	echo '/appl/local/csc/soft/ai/bin/gpu-energy --save' >> $@
+	echo 'scripts/gpu_usage.sh > ${@:.submit=}.gpu-usage &' >> $@
+	echo '${MAKE} $(@:.submit=)' >> $@
+	echo '/appl/local/csc/soft/ai/bin/gpu-energy --diff' >> $@
+	echo '' >>$@
+	echo 'echo "Finishing at `date`"' >>$@
+	sbatch $@

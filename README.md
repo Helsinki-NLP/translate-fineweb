@@ -1,10 +1,17 @@
 # translate-fineweb
 
-Automatically translated documents from fineweb-edu. Translations are based on [OPUS-MT and HPLT-MT models](https://opus.nlpl.eu/dashboard/).
+Automatically translated documents from fineweb-edu and nemotron-cc-hq. Translations are based on [OPUS-MT and HPLT-MT models](https://opus.nlpl.eu/dashboard/).
+
+
 ## First edition
 
 The translated data sets below are based on some preliminary runs with slightly erroneous segmentation.
 Links are availabe from [README-2024-06-26.md](README-2024-06-26.md)
+
+## Small test sample translations
+
+We tested the approach with a small  10K sample taken from Nemotron-CC. The data is available from [a separate list here](README-10k-sample.md).
+
 
 ## release files for fineweb-edu/350BT
 

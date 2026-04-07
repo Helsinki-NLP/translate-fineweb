@@ -24,7 +24,8 @@ MEM          ?= 4g
 CORES        ?= 1
 WALLTIME     ?= 72
 
-SLURM_MAX_NR_JOBS ?= 200
+# SLURM_MAX_NR_JOBS ?= 200
+SLURM_MAX_NR_JOBS ?= 150
 
 GPU          = v100
 DEVICE       = cuda
@@ -359,7 +360,7 @@ MARIAN_MAXI_BATCH = 4
 MARIAN_CPU_DECODER_WORKSPACE ?= 512
 
 # MARIAN_DECODER_WORKSPACE = 20000
-MARIAN_DECODER_WORKSPACE = -10000
+MARIAN_DECODER_WORKSPACE ?= -10000
 
 
 ## this does not seem to work on AMD
@@ -369,10 +370,10 @@ MARIAN_DECODER_WORKSPACE = -10000
 
 
 ifeq ($(GPU_AVAILABLE),1)
-  MARIAN_SCORER_FLAGS = -n1 -d ${MARIAN_GPUS} \
+  MARIAN_SCORER_FLAGS = -n1 -d ${MARIAN_GPUS} --cpu-threads 0 \
 			--quiet-translation -w ${MARIAN_DECODER_WORKSPACE} \
 			--mini-batch ${MARIAN_MINI_BATCH} --maxi-batch ${MARIAN_MAXI_BATCH} --maxi-batch-sort src
-  MARIAN_DECODER_FLAGS = -b ${MARIAN_BEAM_SIZE} -n1 -d ${MARIAN_GPUS} \
+  MARIAN_DECODER_FLAGS = -b ${MARIAN_BEAM_SIZE} -n1 -d ${MARIAN_GPUS} --cpu-threads 0 \
 			--quiet-translation -w ${MARIAN_DECODER_WORKSPACE} \
 			--mini-batch ${MARIAN_MINI_BATCH} --maxi-batch ${MARIAN_MAXI_BATCH} --maxi-batch-sort src \
 			--max-length ${MARIAN_MAX_LENGTH} --max-length-crop
