@@ -2,7 +2,8 @@
 
 * translation model: HPLT-MT-models/en-ga/translate-en-ga-v1.0-hplt_opus
 * model URL: https://huggingface.co/HPLT/translate-en-ga-v1.0-hplt
-* decoding beam size: 4
+* decoding beam size: 1
+* translated using ctranslate2 on CPUs
 
 ## release files
 

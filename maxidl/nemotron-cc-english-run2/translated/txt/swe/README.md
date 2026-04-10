@@ -2,7 +2,8 @@
 
 * translation model: Tatoeba-MT-models/eng-gmq/opusTCv20210807+bt_transformer-big_2022-03-17
 * model URL: https://object.pouta.csc.fi/Tatoeba-MT-models/eng-gmq/opusTCv20210807+bt_transformer-big_2022-03-17.zip
-* decoding beam size: 4
+* decoding beam size: 1
+* translated using ctranslate2 on CPUs
 
 ## release files
 
