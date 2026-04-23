@@ -14,8 +14,9 @@ def upload_missing_parquet_files(base_path, repo_id, batch_size=10):
                          Adjust based on file sizes and network conditions.
     """
     api = HfApi()
-    languages = ["bos", "cat", "dan", "ell", "eng", "eus", "fra", "glg", "hun", "hrv", "ita", "lit", "nld", "nob", "por", "slk", "spa", "srp_Cyrl", "tur",
-                 "bul", "ces", "deu", "est", "fin", "gle", "hrv", "isl", "kat", "lav", "mkd", "mlt", "nno", "pol", "ron", "slv", "sqi", "swe", "ukr"]
+    # languages = ["bos", "cat", "dan", "ell", "eng", "eus", "fra", "glg", "hun", "hrv", "ita", "lit", "nld", "nob", "por", "slk", "spa", "srp_Cyrl", "tur",
+    #              "bul", "ces", "deu", "est", "fin", "gle", "hrv", "isl", "kat", "lav", "mkd", "mlt", "nno", "pol", "ron", "slv", "sqi", "swe", "ukr"]
+    languages = ["bul", "ces", "eng", "est", "fin", "gle", "ron", "swe", "tur", "ukr"]
 
     # --- Get the list of existing files in the repository ---
     print(f"Connecting to '{repo_id}' to get the list of existing files...")
@@ -96,6 +97,7 @@ def upload_missing_parquet_files(base_path, repo_id, batch_size=10):
     print("="*60)
 
 if __name__ == "__main__":
-    path_to_data = "/scratch/project_462000964/tiedeman/translate-fineweb/maxidl/nemotron-cc-english-run1/translated/jsonl"
+    # path_to_data = "/scratch/project_462000964/tiedeman/translate-fineweb/maxidl/nemotron-cc-english-run1/translated/jsonl"
+    path_to_data = "/scratch/project_462000964/tiedeman/translate-fineweb/maxidl/nemotron-cc-english-run2/translated/jsonl"
     dataset_repo_id = "Helsinki-NLP/nemotron-cc-translated"
     upload_missing_parquet_files(path_to_data, dataset_repo_id)
