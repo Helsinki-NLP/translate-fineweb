@@ -16,7 +16,8 @@ def upload_missing_parquet_files(base_path, repo_id, batch_size=10):
     api = HfApi()
     # languages = ["bos", "cat", "dan", "ell", "eng", "eus", "fra", "glg", "hun", "hrv", "ita", "lit", "nld", "nob", "por", "slk", "spa", "srp_Cyrl", "tur",
     #              "bul", "ces", "deu", "est", "fin", "gle", "hrv", "isl", "kat", "lav", "mkd", "mlt", "nno", "pol", "ron", "slv", "sqi", "swe", "ukr"]
-    languages = ["bul", "ces", "eng", "est", "fin", "gle", "ron", "swe", "tur", "ukr"]
+    # languages = ["bul", "ces", "eng", "est", "fin", "gle", "ron", "swe", "tur", "ukr"]
+    languages = ["fin"]
 
     # --- Get the list of existing files in the repository ---
     print(f"Connecting to '{repo_id}' to get the list of existing files...")

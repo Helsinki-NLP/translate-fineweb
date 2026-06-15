@@ -104,9 +104,9 @@ CT2_JOB_TYPE := submitcpu
 # CPU_PROJECT   = project_462000764
 
 ## MaMuLaM
-CSCPROJECT    = project_462000964
-GPU_PROJECT   = project_462000964
-CPU_PROJECT   = project_462000964
+# CSCPROJECT    = project_462000964
+# GPU_PROJECT   = project_462000964
+# CPU_PROJECT   = project_462000964
 
 
 # Jindra's project
@@ -115,9 +115,9 @@ CPU_PROJECT   = project_462000964
 # CPU_PROJECT   = project_465001864
 
 ## HPLT-bitexting-3
-# CSCPROJECT    = project_462001087
-# GPU_PROJECT   = project_462001087
-# CPU_PROJECT   = project_462001087
+CSCPROJECT    = project_462001087
+GPU_PROJECT   = project_462001087
+CPU_PROJECT   = project_462001087
 
 
 
